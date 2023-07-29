@@ -43,7 +43,7 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 
 	private static final Logger logger = LoggerFactory.getLogger(EmailCodeServiceImpl.class);
 	@Resource
-	UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
+	private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
 
 	@Resource
 	private EmailCodeMapper<EmailCode, EmailCodeQuery> emailCodeMapper;
