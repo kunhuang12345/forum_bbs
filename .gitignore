@@ -1,5 +1,5 @@
 workspace-bbs.iml
 .idea/
-hkbbs-java/hkbbs-web/src/main/resources/application.properties
-hkbbs-java/hkbbs-admin/src/main/resources/application.properties
-hkbbs-java/hkbbs-common/src/main/resources/application.properties
+hkbbs-java/hkbbs-web/src/main/resources/application.properties/
+hkbbs-java/hkbbs-admin/src/main/resources/application.properties/
+hkbbs-java/hkbbs-common/src/main/resources/application.properties/
