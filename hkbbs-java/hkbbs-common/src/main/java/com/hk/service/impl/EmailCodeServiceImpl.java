@@ -172,7 +172,6 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 			logger.error("邮件发送失败",e);
 			throw new BusinessException("邮件发送失败");
 		}
-		// 邮件发送人
 	}
 
 }
