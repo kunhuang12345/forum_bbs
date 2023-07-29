@@ -66,7 +66,7 @@ public interface EmailCodeService {
 	Integer deleteEmailCodeByEmailAndCode(String email, String code);
 
 	/**
-	 * 发邮件
+	 * 发邮件验证码
 	 * @param email
 	 * @param type
 	 */
