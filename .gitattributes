@@ -1,0 +1,3 @@
+hkbbs-java/hkbbs-web/src/main/resources/application.properties filter=ignoreLine
+hkbbs-java/hkbbs-admin/src/main/resources/application.properties filter=ignoreLine
+hkbbs-java/hkbbs-common/src/main/resources/application.properties filter=ignoreLine
