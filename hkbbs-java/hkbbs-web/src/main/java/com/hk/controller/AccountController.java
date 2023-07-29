@@ -49,11 +49,18 @@ public class AccountController extends ABaseController {
     @RequestMapping("/sendEmailCode")
     public ResponseVO sendEmailCode(HttpSession session,String email,String checkCode,Integer type) throws Exception {
 
-//        if (StringTools.isEmpty(email) || StringTools.isEmpty(checkCode) || type == null) {
-//            throw new BusinessException(ResponseCodeEnum.CODE_600);
-//        }
-        emailCodeService.sendEmailCode(email,type);
-        return getSuccessResponseVO(null);
+        try{
+            if (StringTools.isEmpty(email) || StringTools.isEmpty(checkCode) || type == null) {
+                throw new BusinessException(ResponseCodeEnum.CODE_600);
+            }
+            if (!checkCode.equalsIgnoreCase((String)session.getAttribute(Constants.CHECK_CODE_KEY_EMAIL))){
+                throw new BusinessException("校验码错误");
+            }
+            emailCodeService.sendEmailCode(email,type);
+            return getSuccessResponseVO(null);
+        } finally {
+            session.removeAttribute(Constants.CHECK_CODE_KEY_EMAIL);
+        }
     }
 
 
