@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hk.mapper.UserInfoMapper">
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="com.hk.entity.po.UserInfo">
+		<!--用户ID-->
+		<id column="user_id" property="userId"/>
+
+		<!--昵称-->
+		<result column="nick_name" property="nickName"/>
+
+		<!--邮箱-->
+		<result column="email" property="email"/>
+
+		<!--密码-->
+		<result column="password" property="password"/>
+
+		<!--0:女 1:男-->
+		<result column="sex" property="sex"/>
+
+		<!--个人描述-->
+		<result column="person_description" property="personDescription"/>
+
+		<!--加入时间-->
+		<result column="join_time" property="joinTime"/>
+
+		<!--最后登录时间-->
+		<result column="last_login_time" property="lastLoginTime"/>
+
+		<!--最后登录IP-->
+		<result column="last_login_ip" property="lastLoginIp"/>
+
+		<!--最后登录ip地址-->
+		<result column="last_login_ip_address" property="lastLoginIpAddress"/>
+
+		<!--积分-->
+		<result column="total_integral" property="totalIntegral"/>
+
+		<!--当前积分-->
+		<result column="current_integral" property="currentIntegral"/>
+
+		<!--0:禁用 1:正常-->
+		<result column="status" property="status"/>
+
+	</resultMap>
+
+
+	<!--通用查询结果列-->
+	<sql id="base_column_list">
+		user_id,nick_name,email,password,sex,person_description,join_time,last_login_time,last_login_ip,last_login_ip_address,total_integral,current_integral,status
+	</sql>
+
+	<!--基础查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.userId != null and query.userId != ''">
+			and user_id = #{query.userId}
+		</if>
+		<if test="query.nickName != null and query.nickName != ''">
+			and nick_name = #{query.nickName}
+		</if>
+		<if test="query.email != null and query.email != ''">
+			and email = #{query.email}
+		</if>
+		<if test="query.password != null and query.password != ''">
+			and password = #{query.password}
+		</if>
+		<if test="query.sex != null">
+			and sex = #{query.sex}
+		</if>
+		<if test="query.personDescription != null and query.personDescription != ''">
+			and person_description = #{query.personDescription}
+		</if>
+		<if test="query.joinTime != null">
+			and join_time = #{query.joinTime}
+		</if>
+		<if test="query.lastLoginTime != null">
+			and last_login_time = #{query.lastLoginTime}
+		</if>
+		<if test="query.lastLoginIp != null and query.lastLoginIp != ''">
+			and last_login_ip = #{query.lastLoginIp}
+		</if>
+		<if test="query.lastLoginIpAddress != null and query.lastLoginIpAddress != ''">
+			and last_login_ip_address = #{query.lastLoginIpAddress}
+		</if>
+		<if test="query.totalIntegral != null">
+			and total_integral = #{query.totalIntegral}
+		</if>
+		<if test="query.currentIntegral != null">
+			and current_integral = #{query.currentIntegral}
+		</if>
+		<if test="query.status != null">
+			and status = #{query.status}
+		</if>
+	</sql>
+
+	<!--扩展的查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.userIdFuzzy != null and query.userIdFuzzy !=''">
+			and user_id like concat('%', #{query.userIdFuzzy}, '%')
+		</if>
+		<if test="query.nickNameFuzzy != null and query.nickNameFuzzy !=''">
+			and nick_name like concat('%', #{query.nickNameFuzzy}, '%')
+		</if>
+		<if test="query.emailFuzzy != null and query.emailFuzzy !=''">
+			and email like concat('%', #{query.emailFuzzy}, '%')
+		</if>
+		<if test="query.passwordFuzzy != null and query.passwordFuzzy !=''">
+			and password like concat('%', #{query.passwordFuzzy}, '%')
+		</if>
+		<if test="query.personDescriptionFuzzy != null and query.personDescriptionFuzzy !=''">
+			and person_description like concat('%', #{query.personDescriptionFuzzy}, '%')
+		</if>
+		<if test="query.joinTimeStart != null and query.joinTimeStart !=''">
+			<![CDATA[ and join_time >= str_to_date(#{query.joinTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.joinTimeEnd != null and query.joinTimeEnd !=''">
+			<![CDATA[ and join_time < date_sub(str_to_date(#{query.joinTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+		<if test="query.lastLoginTimeStart != null and query.lastLoginTimeStart !=''">
+			<![CDATA[ and last_login_time >= str_to_date(#{query.lastLoginTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.lastLoginTimeEnd != null and query.lastLoginTimeEnd !=''">
+			<![CDATA[ and last_login_time < date_sub(str_to_date(#{query.lastLoginTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+		<if test="query.lastLoginIpFuzzy != null and query.lastLoginIpFuzzy !=''">
+			and last_login_ip like concat('%', #{query.lastLoginIpFuzzy}, '%')
+		</if>
+		<if test="query.lastLoginIpAddressFuzzy != null and query.lastLoginIpAddressFuzzy !=''">
+			and last_login_ip_address like concat('%', #{query.lastLoginIpAddressFuzzy}, '%')
+		</if>
+	</sql>
+
+	<!--通用查询条件-->
+	<sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		select 
+		<include refid="base_column_list"/> 
+		from user_info
+		<include refid="query_condition"/>
+		<if test="query.orderBy != null">
+		order by ${query.orderBy}
+		</if>
+		<if test="query.simplePage != null">
+		limit #{query.simplePage.start}, #{query.simplePage.end}
+		</if>
+	</select>
+
+	<!--查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer">
+		select count(1) from user_info <include refid="query_condition"/>
+	</select>
+
+	<!--插入（匹配有值的字段）-->
+	<insert id="insert" parameterType="com.hk.entity.po.UserInfo">
+		<trim prefix="insert into user_info(" suffix=")" suffixOverrides=",">
+			<if test="bean.userId != null">
+				user_id,
+			</if>
+			<if test="bean.nickName != null">
+				nick_name,
+			</if>
+			<if test="bean.email != null">
+				email,
+			</if>
+			<if test="bean.password != null">
+				password,
+			</if>
+			<if test="bean.sex != null">
+				sex,
+			</if>
+			<if test="bean.personDescription != null">
+				person_description,
+			</if>
+			<if test="bean.joinTime != null">
+				join_time,
+			</if>
+			<if test="bean.lastLoginTime != null">
+				last_login_time,
+			</if>
+			<if test="bean.lastLoginIp != null">
+				last_login_ip,
+			</if>
+			<if test="bean.lastLoginIpAddress != null">
+				last_login_ip_address,
+			</if>
+			<if test="bean.totalIntegral != null">
+				total_integral,
+			</if>
+			<if test="bean.currentIntegral != null">
+				current_integral,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.userId != null">
+				#{bean.userId},
+			</if>
+			<if test="bean.nickName != null">
+				#{bean.nickName},
+			</if>
+			<if test="bean.email != null">
+				#{bean.email},
+			</if>
+			<if test="bean.password != null">
+				#{bean.password},
+			</if>
+			<if test="bean.sex != null">
+				#{bean.sex},
+			</if>
+			<if test="bean.personDescription != null">
+				#{bean.personDescription},
+			</if>
+			<if test="bean.joinTime != null">
+				#{bean.joinTime},
+			</if>
+			<if test="bean.lastLoginTime != null">
+				#{bean.lastLoginTime},
+			</if>
+			<if test="bean.lastLoginIp != null">
+				#{bean.lastLoginIp},
+			</if>
+			<if test="bean.lastLoginIpAddress != null">
+				#{bean.lastLoginIpAddress},
+			</if>
+			<if test="bean.totalIntegral != null">
+				#{bean.totalIntegral},
+			</if>
+			<if test="bean.currentIntegral != null">
+				#{bean.currentIntegral},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+		</trim>
+	</insert>
+
+	<!--插入或者更新（匹配有值的字段）-->
+	<insert id="insertOrUpdate" parameterType="com.hk.entity.po.UserInfo">
+		<trim prefix="insert into user_info(" suffix=")" suffixOverrides=",">
+			<if test="bean.userId != null">
+				user_id,
+			</if>
+			<if test="bean.nickName != null">
+				nick_name,
+			</if>
+			<if test="bean.email != null">
+				email,
+			</if>
+			<if test="bean.password != null">
+				password,
+			</if>
+			<if test="bean.sex != null">
+				sex,
+			</if>
+			<if test="bean.personDescription != null">
+				person_description,
+			</if>
+			<if test="bean.joinTime != null">
+				join_time,
+			</if>
+			<if test="bean.lastLoginTime != null">
+				last_login_time,
+			</if>
+			<if test="bean.lastLoginIp != null">
+				last_login_ip,
+			</if>
+			<if test="bean.lastLoginIpAddress != null">
+				last_login_ip_address,
+			</if>
+			<if test="bean.totalIntegral != null">
+				total_integral,
+			</if>
+			<if test="bean.currentIntegral != null">
+				current_integral,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.userId != null">
+				#{bean.userId},
+			</if>
+			<if test="bean.nickName != null">
+				#{bean.nickName},
+			</if>
+			<if test="bean.email != null">
+				#{bean.email},
+			</if>
+			<if test="bean.password != null">
+				#{bean.password},
+			</if>
+			<if test="bean.sex != null">
+				#{bean.sex},
+			</if>
+			<if test="bean.personDescription != null">
+				#{bean.personDescription},
+			</if>
+			<if test="bean.joinTime != null">
+				#{bean.joinTime},
+			</if>
+			<if test="bean.lastLoginTime != null">
+				#{bean.lastLoginTime},
+			</if>
+			<if test="bean.lastLoginIp != null">
+				#{bean.lastLoginIp},
+			</if>
+			<if test="bean.lastLoginIpAddress != null">
+				#{bean.lastLoginIpAddress},
+			</if>
+			<if test="bean.totalIntegral != null">
+				#{bean.totalIntegral},
+			</if>
+			<if test="bean.currentIntegral != null">
+				#{bean.currentIntegral},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+		</trim>
+		on duplicate key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.nickName != null">
+				nick_name = #{bean.nickName},
+			</if>
+			<if test="bean.email != null">
+				email = #{bean.email},
+			</if>
+			<if test="bean.password != null">
+				password = #{bean.password},
+			</if>
+			<if test="bean.sex != null">
+				sex = #{bean.sex},
+			</if>
+			<if test="bean.personDescription != null">
+				person_description = #{bean.personDescription},
+			</if>
+			<if test="bean.joinTime != null">
+				join_time = #{bean.joinTime},
+			</if>
+			<if test="bean.lastLoginTime != null">
+				last_login_time = #{bean.lastLoginTime},
+			</if>
+			<if test="bean.lastLoginIp != null">
+				last_login_ip = #{bean.lastLoginIp},
+			</if>
+			<if test="bean.lastLoginIpAddress != null">
+				last_login_ip_address = #{bean.lastLoginIpAddress},
+			</if>
+			<if test="bean.totalIntegral != null">
+				total_integral = #{bean.totalIntegral},
+			</if>
+			<if test="bean.currentIntegral != null">
+				current_integral = #{bean.currentIntegral},
+			</if>
+			<if test="bean.status != null">
+				status = #{bean.status},
+			</if>
+		</trim>
+	</insert>
+
+	<!--批量插入-->
+	<insert id="insertBatch" parameterType="com.hk.entity.po.UserInfo">
+		insert into user_info(user_id,nick_name,email,password,sex,person_description,join_time,last_login_time,last_login_ip,last_login_ip_address,total_integral,current_integral,status) values
+		<foreach collection="list" item="item" separator=",">
+		(#{item.userId},#{item.nickName},#{item.email},#{item.password},#{item.sex},#{item.personDescription},#{item.joinTime},#{item.lastLoginTime},#{item.lastLoginIp},#{item.lastLoginIpAddress},#{item.totalIntegral},#{item.currentIntegral},#{item.status})
+		</foreach>
+	</insert>
+
+	<!--批量插入或者更新-->
+	<insert id="insertOrUpdateBatch" parameterType="com.hk.entity.po.UserInfo">
+		insert into user_info(user_id,nick_name,email,password,sex,person_description,join_time,last_login_time,last_login_ip,last_login_ip_address,total_integral,current_integral,status) values
+		<foreach collection="list" item="item" separator=",">
+		(#{item.userId},#{item.nickName},#{item.email},#{item.password},#{item.sex},#{item.personDescription},#{item.joinTime},#{item.lastLoginTime},#{item.lastLoginIp},#{item.lastLoginIpAddress},#{item.totalIntegral},#{item.currentIntegral},#{item.status})
+		</foreach>
+		on duplicate key update
+		user_id=values(user_id),
+		nick_name=values(nick_name),
+		email=values(email),
+		password=values(password),
+		sex=values(sex),
+		person_description=values(person_description),
+		join_time=values(join_time),
+		last_login_time=values(last_login_time),
+		last_login_ip=values(last_login_ip),
+		last_login_ip_address=values(last_login_ip_address),
+		total_integral=values(total_integral),
+		current_integral=values(current_integral),
+		status=values(status)
+	</insert>
+
+	<!--根据UserId查询-->
+	<select id="selectByUserId" resultMap="base_result_map" >
+		select
+		<include refid="base_column_list"/>
+		from user_info
+		where user_id=#{user_id}
+	</select>
+
+	<!--根据UserId更新-->
+	<update id="updateByUserId" parameterType="com.hk.entity.po.UserInfo">
+		update user_info
+		<set>
+			<if test="bean.userId!=null">
+			user_id=#{bean.userId},
+			</if>
+			<if test="bean.nickName!=null">
+			nick_name=#{bean.nickName},
+			</if>
+			<if test="bean.email!=null">
+			email=#{bean.email},
+			</if>
+			<if test="bean.password!=null">
+			password=#{bean.password},
+			</if>
+			<if test="bean.sex!=null">
+			sex=#{bean.sex},
+			</if>
+			<if test="bean.personDescription!=null">
+			person_description=#{bean.personDescription},
+			</if>
+			<if test="bean.joinTime!=null">
+			join_time=#{bean.joinTime},
+			</if>
+			<if test="bean.lastLoginTime!=null">
+			last_login_time=#{bean.lastLoginTime},
+			</if>
+			<if test="bean.lastLoginIp!=null">
+			last_login_ip=#{bean.lastLoginIp},
+			</if>
+			<if test="bean.lastLoginIpAddress!=null">
+			last_login_ip_address=#{bean.lastLoginIpAddress},
+			</if>
+			<if test="bean.totalIntegral!=null">
+			total_integral=#{bean.totalIntegral},
+			</if>
+			<if test="bean.currentIntegral!=null">
+			current_integral=#{bean.currentIntegral},
+			</if>
+			<if test="bean.status!=null">
+			status=#{bean.status}
+			</if>
+		</set>
+		where user_id=#{user_id}
+	</update>
+
+	<!--根据UserId删除-->
+	<delete id="deleteByUserId">
+		delete from user_info
+		where user_id=#{user_id}
+	</delete>
+
+	<!--根据Email查询-->
+	<select id="selectByEmail" resultMap="base_result_map" >
+		select
+		<include refid="base_column_list"/>
+		from user_info
+		where email=#{email}
+	</select>
+
+	<!--根据Email更新-->
+	<update id="updateByEmail" parameterType="com.hk.entity.po.UserInfo">
+		update user_info
+		<set>
+			<if test="bean.userId!=null">
+			user_id=#{bean.userId},
+			</if>
+			<if test="bean.nickName!=null">
+			nick_name=#{bean.nickName},
+			</if>
+			<if test="bean.email!=null">
+			email=#{bean.email},
+			</if>
+			<if test="bean.password!=null">
+			password=#{bean.password},
+			</if>
+			<if test="bean.sex!=null">
+			sex=#{bean.sex},
+			</if>
+			<if test="bean.personDescription!=null">
+			person_description=#{bean.personDescription},
+			</if>
+			<if test="bean.joinTime!=null">
+			join_time=#{bean.joinTime},
+			</if>
+			<if test="bean.lastLoginTime!=null">
+			last_login_time=#{bean.lastLoginTime},
+			</if>
+			<if test="bean.lastLoginIp!=null">
+			last_login_ip=#{bean.lastLoginIp},
+			</if>
+			<if test="bean.lastLoginIpAddress!=null">
+			last_login_ip_address=#{bean.lastLoginIpAddress},
+			</if>
+			<if test="bean.totalIntegral!=null">
+			total_integral=#{bean.totalIntegral},
+			</if>
+			<if test="bean.currentIntegral!=null">
+			current_integral=#{bean.currentIntegral},
+			</if>
+			<if test="bean.status!=null">
+			status=#{bean.status}
+			</if>
+		</set>
+		where email=#{email}
+	</update>
+
+	<!--根据Email删除-->
+	<delete id="deleteByEmail">
+		delete from user_info
+		where email=#{email}
+	</delete>
+
+	<!--根据NickName查询-->
+	<select id="selectByNickName" resultMap="base_result_map" >
+		select
+		<include refid="base_column_list"/>
+		from user_info
+		where nick_name=#{nick_name}
+	</select>
+
+	<!--根据NickName更新-->
+	<update id="updateByNickName" parameterType="com.hk.entity.po.UserInfo">
+		update user_info
+		<set>
+			<if test="bean.userId!=null">
+			user_id=#{bean.userId},
+			</if>
+			<if test="bean.nickName!=null">
+			nick_name=#{bean.nickName},
+			</if>
+			<if test="bean.email!=null">
+			email=#{bean.email},
+			</if>
+			<if test="bean.password!=null">
+			password=#{bean.password},
+			</if>
+			<if test="bean.sex!=null">
+			sex=#{bean.sex},
+			</if>
+			<if test="bean.personDescription!=null">
+			person_description=#{bean.personDescription},
+			</if>
+			<if test="bean.joinTime!=null">
+			join_time=#{bean.joinTime},
+			</if>
+			<if test="bean.lastLoginTime!=null">
+			last_login_time=#{bean.lastLoginTime},
+			</if>
+			<if test="bean.lastLoginIp!=null">
+			last_login_ip=#{bean.lastLoginIp},
+			</if>
+			<if test="bean.lastLoginIpAddress!=null">
+			last_login_ip_address=#{bean.lastLoginIpAddress},
+			</if>
+			<if test="bean.totalIntegral!=null">
+			total_integral=#{bean.totalIntegral},
+			</if>
+			<if test="bean.currentIntegral!=null">
+			current_integral=#{bean.currentIntegral},
+			</if>
+			<if test="bean.status!=null">
+			status=#{bean.status}
+			</if>
+		</set>
+		where nick_name=#{nick_name}
+	</update>
+
+	<!--根据NickName删除-->
+	<delete id="deleteByNickName">
+		delete from user_info
+		where nick_name=#{nick_name}
+	</delete>
+
+
+
+</mapper>
