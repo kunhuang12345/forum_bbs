@@ -54,7 +54,7 @@ public class AccountController extends ABaseController {
                 throw new BusinessException(ResponseCodeEnum.CODE_600);
             }
             if (!checkCode.equalsIgnoreCase((String)session.getAttribute(Constants.CHECK_CODE_KEY_EMAIL))){
-                throw new BusinessException("校验码错误");
+                throw new BusinessException("图形校验码错误");
             }
             emailCodeService.sendEmailCode(email,type);
             return getSuccessResponseVO(null);
