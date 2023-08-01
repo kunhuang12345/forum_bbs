@@ -148,7 +148,7 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 		emailCodeMapper.disableEmailCode(email);
 
 		EmailCode emailCode = new EmailCode();
-		emailCode.setCode(code);
+		emailCode.setCode(code.toLowerCase());
 		emailCode.setCreateTime(new Date());
 		emailCode.setStatus(Constants.ZERO);
 		emailCode.setEmail(email);
@@ -172,6 +172,18 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 			logger.error("邮件发送失败",e);
 			throw new BusinessException("邮件发送失败");
 		}
+	}
+
+	@Override
+	public void checkCode(String email, String emailCode) throws BusinessException {
+		EmailCode dbInfo = emailCodeMapper.selectByEmailAndCode(email,emailCode.toLowerCase());
+		if (dbInfo == null) {
+			throw new BusinessException("邮箱验证码不正确");
+		}
+		if (dbInfo.getStatus() != 0 || System.currentTimeMillis() - dbInfo.getCreateTime().getTime() > ((Integer)(1000*60))*Constants.LENGTH_15){
+			throw new BusinessException("邮箱验证码失效");
+		}
+		emailCodeMapper.disableEmailCode(email);
 	}
 
 }

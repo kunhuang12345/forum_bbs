@@ -1,6 +1,13 @@
 package com.hk.service.impl;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.util.List;
+
+import com.hk.entity.dto.SysSetting4AuditDto;
+import com.hk.entity.dto.SysSetting4CommentDto;
+import com.hk.entity.dto.SysSettingDto;
+import com.hk.entity.enums.SysSettingCodeEnum;
 import com.hk.service.SysSettingService;
 import com.hk.entity.po.SysSetting;
 import com.hk.entity.vo.PaginationResultVO;
@@ -8,6 +15,11 @@ import com.hk.entity.query.SysSettingQuery;
 import com.hk.mapper.SysSettingMapper;
 import com.hk.entity.query.SimplePage;
 import com.hk.entity.enums.PageSize;
+import com.hk.utils.JsonUtils;
+import com.hk.utils.StringTools;
+import com.hk.utils.SysCacheUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -19,6 +31,8 @@ import javax.annotation.Resource;
  */
 @Service("sysSettingService")
 public class SysSettingServiceImpl implements SysSettingService {
+
+	private static final Logger logger = LoggerFactory.getLogger(SysSettingServiceImpl.class);
 
 	@Resource
 	private SysSettingMapper<SysSetting, SysSettingQuery> sysSettingMapper;
@@ -98,4 +112,27 @@ public class SysSettingServiceImpl implements SysSettingService {
 		return this.sysSettingMapper.deleteByCode(code);
 	}
 
+	@Override
+	public void refreshCache() {
+		try{
+			SysSettingDto sysSettingDto = new SysSettingDto();
+			List<SysSetting> list = this.sysSettingMapper.selectList(new SysSettingQuery());
+			for (SysSetting sysSetting: list
+			) {
+				String jsonContent = sysSetting.getJsonContent();
+				if (StringTools.isEmpty(jsonContent)){
+					continue;
+				}
+				String code = sysSetting.getCode();
+				SysSettingCodeEnum sysSettingCodeEnum = SysSettingCodeEnum.getByCode(code);
+				PropertyDescriptor pd = new PropertyDescriptor(sysSettingCodeEnum.getPropName(),SysSettingDto.class);
+				Method method = pd.getWriteMethod();
+				Class clazz = Class.forName(sysSettingCodeEnum.getClazz());
+				method.invoke(sysSettingDto,JsonUtils.convertJson2Obj(jsonContent,clazz));
+			}
+			SysCacheUtils.refresh(sysSettingDto);
+		} catch (Exception e){
+			logger.error("刷新缓存失败",e);
+		}
+	}
 }

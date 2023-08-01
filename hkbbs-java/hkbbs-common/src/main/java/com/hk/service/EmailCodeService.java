@@ -72,4 +72,6 @@ public interface EmailCodeService {
 	 */
 	void sendEmailCode(String email,Integer type) throws BusinessException;
 
+	void checkCode(String email,String emailCode) throws BusinessException;
+
 }

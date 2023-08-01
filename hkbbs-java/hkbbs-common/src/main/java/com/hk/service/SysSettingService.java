@@ -58,4 +58,7 @@ public interface SysSettingService {
 	 */
 	Integer deleteSysSettingByCode(String code);
 
+
+	void refreshCache();
+
 }

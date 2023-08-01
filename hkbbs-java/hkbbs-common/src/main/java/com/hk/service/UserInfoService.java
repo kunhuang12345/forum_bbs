@@ -3,6 +3,8 @@ package com.hk.service;
 import java.util.List;
 import java.util.Date;
 
+import com.hk.entity.enums.UserIntegralOperateTypeEnum;
+import com.hk.exception.BusinessException;
 import com.hk.utils.DateUtils;
 import com.hk.entity.enums.DateTimePatternEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -93,5 +95,8 @@ public interface UserInfoService {
 	 * 根据NickName删除
 	 */
 	Integer deleteUserInfoByNickName(String nickName);
+
+	void register(String email,String nickName,String password,String emailCode) throws BusinessException;
+	void updateUserIntegral(String userId, UserIntegralOperateTypeEnum operateTypeEnum, Integer changeType, Integer integral) throws BusinessException;
 
 }

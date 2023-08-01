@@ -101,7 +101,7 @@
 
 	<!--插入（匹配有值的字段）-->
 	<insert id="insert" parameterType="com.hk.entity.po.ForumBoard">
-		<selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+		<selectKey keyProperty="bean.boardId" resultType="Integer" order="AFTER">
 			select last_insert_id()
 		</selectKey>
 		<trim prefix="insert into forum_board(" suffix=")" suffixOverrides=",">
