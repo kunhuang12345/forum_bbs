@@ -1,6 +1,5 @@
-package com.hk.controller;
+package com.hk.controller.base;
 
-import com.hk.controller.ABaseController;
 import com.hk.entity.enums.ResponseCodeEnum;
 import com.hk.entity.vo.ResponseVO;
 import com.hk.exception.BusinessException;

@@ -1,4 +1,4 @@
-package com.hk.controller;
+package com.hk.controller.base;
 
 import com.hk.entity.vo.ResponseVO;
 
