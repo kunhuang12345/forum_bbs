@@ -1,9 +1,12 @@
 package com.hk.controller;
 
+import com.hk.annotation.GlobalInterceptor;
+import com.hk.annotation.VerifyParam;
 import com.hk.controller.base.ABaseController;
 import com.hk.entity.constants.Constants;
 import com.hk.entity.dto.CreateImageCode;
 import com.hk.entity.enums.ResponseCodeEnum;
+import com.hk.entity.enums.VerifyRegexEnum;
 import com.hk.entity.vo.ResponseVO;
 import com.hk.exception.BusinessException;
 import com.hk.service.EmailCodeService;
@@ -51,12 +54,12 @@ public class AccountController extends ABaseController {
     }
 
     @RequestMapping("/sendEmailCode")
-    public ResponseVO sendEmailCode(HttpSession session,String email,String checkCode,Integer type) throws Exception {
-
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVO sendEmailCode(HttpSession session,
+                                    @VerifyParam(required = true,regex = VerifyRegexEnum.EMAIL) String email,
+                                    @VerifyParam(required = true) String checkCode,
+                                    @VerifyParam(required = true) Integer type) throws Exception {
         try{
-            if (StringTools.isEmpty(email) || StringTools.isEmpty(checkCode) || type == null) {
-                throw new BusinessException(ResponseCodeEnum.CODE_600);
-            }
             if (!checkCode.equalsIgnoreCase((String)session.getAttribute(Constants.CHECK_CODE_KEY_EMAIL))){
                 throw new BusinessException("图形校验码错误");
             }
@@ -69,13 +72,16 @@ public class AccountController extends ABaseController {
 
 
     @RequestMapping("/register")
-    public ResponseVO register(HttpSession session,String email,String emailCode,String nickName,String password,String checkCode) throws Exception {
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVO register(HttpSession session,
+                               @VerifyParam(required = true,min = 5,max = 150,regex = VerifyRegexEnum.EMAIL) String email,
+                               @VerifyParam(required = true) String emailCode,
+                               @VerifyParam(required = true,min = 3,max = 30) String nickName,
+                               @VerifyParam(required = true,regex = VerifyRegexEnum.PASSWORD,min = 8,max = 18) String password,
+                               @VerifyParam(required = true,min = 1,max = 10) String checkCode) throws Exception {
         try{
-            if (StringTools.isEmpty(email) || StringTools.isEmpty(emailCode) || StringTools.isEmpty(nickName) || StringTools.isEmpty(password) || StringTools.isEmpty(checkCode)){
-                throw new BusinessException(ResponseCodeEnum.CODE_600);
-            }
             String checkCodeKey = (String)session.getAttribute(Constants.CHECK_CODE_KEY);
-            if (!(checkCodeKey).equalsIgnoreCase(checkCode)) {
+            if (!(checkCode).equalsIgnoreCase(checkCodeKey)) {
                 throw new BusinessException("验证码错误");
             }
             userInfoService.register(email,nickName,password,emailCode);
