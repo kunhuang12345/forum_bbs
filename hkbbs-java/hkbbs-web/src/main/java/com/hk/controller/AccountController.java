@@ -6,6 +6,8 @@ import com.hk.controller.base.ABaseController;
 import com.hk.entity.constants.Constants;
 import com.hk.entity.dto.CreateImageCode;
 import com.hk.entity.dto.SessionWebUserDto;
+import com.hk.entity.dto.SysSetting4CommentDto;
+import com.hk.entity.dto.SysSettingDto;
 import com.hk.entity.enums.ResponseCodeEnum;
 import com.hk.entity.enums.VerifyRegexEnum;
 import com.hk.entity.vo.ResponseVO;
@@ -13,6 +15,7 @@ import com.hk.exception.BusinessException;
 import com.hk.service.EmailCodeService;
 import com.hk.service.UserInfoService;
 import com.hk.utils.StringTools;
+import com.hk.utils.SysCacheUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,6 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class AccountController extends ABaseController {
@@ -113,6 +118,29 @@ public class AccountController extends ABaseController {
         } finally {
             session.removeAttribute(Constants.CHECK_CODE_KEY);
         }
+    }
+
+    @RequestMapping("/getUserInfo")
+    @GlobalInterceptor()
+    public ResponseVO getUserInfo(HttpSession session) {
+        return getSuccessResponseVO(getUserInfoFromSession(session));
+    }
+
+    @RequestMapping("/logout")
+    @GlobalInterceptor()
+    public ResponseVO logout(HttpSession session){
+        session.invalidate();
+        return getSuccessResponseVO("已注销");
+    }
+
+    @RequestMapping("/getSysSetting")
+    @GlobalInterceptor()
+    public ResponseVO getSysSetting(){
+        SysSettingDto settingDto = SysCacheUtils.getSysSetting();
+        SysSetting4CommentDto commentDto = settingDto.getCommentSetting();
+        Map<String,Object> result = new HashMap<>();
+        result.put("commentOpen",commentDto.getCommentOpen());
+        return getSuccessResponseVO(result);
     }
 
 

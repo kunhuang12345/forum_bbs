@@ -1,10 +1,13 @@
 package com.hk.controller.base;
 
+import com.hk.entity.constants.Constants;
+import com.hk.entity.dto.SessionWebUserDto;
 import com.hk.entity.vo.ResponseVO;
 
 import com.hk.entity.enums.ResponseCodeEnum;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 public class ABaseController {
     protected static final String STATUS_SUCCESS = "success";
@@ -46,5 +49,10 @@ public class ABaseController {
             ip = request.getRemoteAddr();
         }
         return ip;
+    }
+
+    protected SessionWebUserDto getUserInfoFromSession(HttpSession session) {
+        SessionWebUserDto sessionWebUserDto = (SessionWebUserDto) session.getAttribute(Constants.SESSION_KEY);
+        return sessionWebUserDto;
     }
 }
