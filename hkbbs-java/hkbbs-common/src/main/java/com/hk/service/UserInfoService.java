@@ -103,4 +103,5 @@ public interface UserInfoService {
 
 	SessionWebUserDto login(String email,String password,String ip) throws BusinessException;
 
+    void resetPwd(String email,String password, String emailCode) throws BusinessException;
 }

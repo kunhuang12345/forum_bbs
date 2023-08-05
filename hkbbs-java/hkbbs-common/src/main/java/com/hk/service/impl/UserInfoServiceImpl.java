@@ -282,7 +282,20 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 	}
 
-	public String getIpAddress(String ip) {
+	@Transactional(rollbackFor = Exception.class)
+    @Override
+    public void resetPwd(String email, String password, String emailCode) throws BusinessException {
+        UserInfo userInfo = this.userInfoMapper.selectByEmail(email);
+		if (null == userInfo) {
+			throw new BusinessException("邮箱不存在！");
+		}
+		emailCodeService.checkCode(email,emailCode);
+		UserInfo updateUserInfo = new UserInfo();
+		updateUserInfo.setPassword(StringTools.encodeMd5(password));
+		userInfoMapper.updateByEmail(updateUserInfo,email);
+    }
+
+    public String getIpAddress(String ip) {
 		try {
 			String url = "https://whois.pconline.com.cn/ipJson.jsp?json=true&ip=" + ip;
 			String responseJson = OKHttpUtils.getRequest(url);
