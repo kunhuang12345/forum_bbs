@@ -2,9 +2,11 @@ package com.hk.controller.base;
 
 import com.hk.entity.constants.Constants;
 import com.hk.entity.dto.SessionWebUserDto;
+import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.vo.ResponseVO;
 
 import com.hk.entity.enums.ResponseCodeEnum;
+import com.hk.utils.CopyUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -54,5 +56,15 @@ public class ABaseController {
     protected SessionWebUserDto getUserInfoFromSession(HttpSession session) {
         SessionWebUserDto sessionWebUserDto = (SessionWebUserDto) session.getAttribute(Constants.SESSION_KEY);
         return sessionWebUserDto;
+    }
+
+    protected <S,T>PaginationResultVO<T> convert2PaginationVO(PaginationResultVO<S> result, Class<T> clazz){
+        PaginationResultVO<T> resultVO = new PaginationResultVO<>();
+        resultVO.setList(CopyUtils.copyList(result.getList(),clazz));
+        resultVO.setPageNo(result.getPageNo());
+        resultVO.setPageSize(result.getPageSize());
+        resultVO.setPageTotal(result.getPageTotal());
+        resultVO.setTotalCount(result.getTotalCount());
+        return resultVO;
     }
 }

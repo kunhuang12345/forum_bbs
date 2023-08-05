@@ -76,7 +76,7 @@
 
 	<!--通用查询结果列-->
 	<sql id="base_column_list">
-		article_id,board_id,board_name,p_board_id,p_board_name,user_id,nick_name,user_ip_address,title,cover,content,markdown_content,editor_type,summary,post_time,last_update_time,read_count,good_count,comment_count,top_type,attachment_type,status
+		article_id,board_id,board_name,p_board_id,p_board_name,user_id,nick_name,user_ip_address,title,cover,editor_type,summary,post_time,last_update_time,read_count,good_count,comment_count,top_type,attachment_type,status
 	</sql>
 
 	<!--基础查询条件-->
@@ -196,7 +196,12 @@
 		<if test="query.lastUpdateTimeEnd != null and query.lastUpdateTimeEnd !=''">
 			<![CDATA[ and last_update_time < date_sub(str_to_date(#{query.lastUpdateTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
 		</if>
+		 <!--查询已登录用户待审核的-->
+		 <if test="query.currentUserId!=null and query.currentUserId !=''">
+			 and (status=1 or (status=0 and user_id=#{query.currentUserId}))
+		 </if>
 	</sql>
+
 
 	<!--通用查询条件-->
 	<sql id="query_condition">
@@ -613,7 +618,7 @@
 	<!--根据ArticleId查询-->
 	<select id="selectByArticleId" resultMap="base_result_map" >
 		select
-		<include refid="base_column_list"/>
+		<include refid="base_column_list"/>,content,markdown_content
 		from forum_article
 		where article_id=#{article_id}
 	</select>

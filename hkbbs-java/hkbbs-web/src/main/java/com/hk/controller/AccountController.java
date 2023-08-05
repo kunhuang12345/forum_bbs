@@ -111,7 +111,7 @@ public class AccountController extends ABaseController {
                 throw new BusinessException("验证码错误");
             }
 
-            SessionWebUserDto sessionWebUserDto = userInfoService.login(email,password,getIpAddress(request));
+            SessionWebUserDto sessionWebUserDto = userInfoService.login(email,StringTools.encodeMd5(password),getIpAddress(request));
             session.setAttribute(Constants.SESSION_KEY,sessionWebUserDto);
 
             return getSuccessResponseVO(sessionWebUserDto);

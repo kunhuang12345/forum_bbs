@@ -151,6 +151,16 @@ public class ForumArticleQuery extends BaseQuery {
 	 */
 	private Integer status;
 
+	private String currentUserId;
+
+	public String getCurrentUserId() {
+		return currentUserId;
+	}
+
+	public void setCurrentUserId(String currentUserId) {
+		this.currentUserId = currentUserId;
+	}
+
 	public void setArticleId(String articleId) {
 		this.articleId = articleId;
 	}
