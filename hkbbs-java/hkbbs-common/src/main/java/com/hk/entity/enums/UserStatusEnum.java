@@ -1,6 +1,6 @@
 package com.hk.entity.enums;
 
-public enum UserStatus {
+public enum UserStatusEnum {
     DISABLE(0, "禁用"),
     ENABLE(1, "启用");
 
@@ -8,16 +8,16 @@ public enum UserStatus {
 
     private String desc;
 
-    UserStatus(Integer status, String desc) {
+    UserStatusEnum(Integer status, String desc) {
         this.status = status;
         this.desc = desc;
     }
 
-    public Integer getCode() {
+    public Integer getStatus() {
         return this.status;
     }
 
-    public String getMsg() {
+    public String getDesc() {
         return this.desc;
     }
 }

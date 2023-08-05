@@ -5,6 +5,7 @@ import com.hk.annotation.VerifyParam;
 import com.hk.controller.base.ABaseController;
 import com.hk.entity.constants.Constants;
 import com.hk.entity.dto.CreateImageCode;
+import com.hk.entity.dto.SessionWebUserDto;
 import com.hk.entity.enums.ResponseCodeEnum;
 import com.hk.entity.enums.VerifyRegexEnum;
 import com.hk.entity.vo.ResponseVO;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -78,14 +80,36 @@ public class AccountController extends ABaseController {
                                @VerifyParam(required = true) String emailCode,
                                @VerifyParam(required = true,min = 3,max = 30) String nickName,
                                @VerifyParam(required = true,regex = VerifyRegexEnum.PASSWORD,min = 8,max = 18) String password,
-                               @VerifyParam(required = true,min = 1,max = 10) String checkCode) throws Exception {
+                               @VerifyParam(required = true) String checkCode) throws Exception {
         try{
             String checkCodeKey = (String)session.getAttribute(Constants.CHECK_CODE_KEY);
             if (!(checkCode).equalsIgnoreCase(checkCodeKey)) {
                 throw new BusinessException("验证码错误");
             }
             userInfoService.register(email,nickName,password,emailCode);
-            return getSuccessResponseVO(null);
+            return getSuccessResponseVO("注册成功！");
+        } finally {
+            session.removeAttribute(Constants.CHECK_CODE_KEY);
+        }
+    }
+
+    @RequestMapping("/login")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVO login(HttpSession session,
+                            HttpServletRequest request,
+                            @VerifyParam(required = true,min = 5,max = 150) String email,
+                            @VerifyParam(required = true,min = 8,max = 50) String password,
+                            @VerifyParam(required = true) String checkCode) throws Exception {
+        try{
+            String checkCodeKey = (String)session.getAttribute(Constants.CHECK_CODE_KEY);
+            if (!(checkCode).equalsIgnoreCase(checkCodeKey)) {
+                throw new BusinessException("验证码错误");
+            }
+
+            SessionWebUserDto sessionWebUserDto = userInfoService.login(email,password,getIpAddress(request));
+            session.setAttribute(Constants.SESSION_KEY,sessionWebUserDto);
+
+            return getSuccessResponseVO("登录成功！");
         } finally {
             session.removeAttribute(Constants.CHECK_CODE_KEY);
         }

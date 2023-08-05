@@ -3,6 +3,7 @@ package com.hk.service;
 import java.util.List;
 import java.util.Date;
 
+import com.hk.entity.dto.SessionWebUserDto;
 import com.hk.entity.enums.UserIntegralOperateTypeEnum;
 import com.hk.exception.BusinessException;
 import com.hk.utils.DateUtils;
@@ -98,5 +99,8 @@ public interface UserInfoService {
 
 	void register(String email,String nickName,String password,String emailCode) throws BusinessException;
 	void updateUserIntegral(String userId, UserIntegralOperateTypeEnum operateTypeEnum, Integer changeType, Integer integral) throws BusinessException;
+
+
+	SessionWebUserDto login(String email,String password,String ip) throws BusinessException;
 
 }

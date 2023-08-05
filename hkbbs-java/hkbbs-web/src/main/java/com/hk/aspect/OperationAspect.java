@@ -50,7 +50,7 @@ public class OperationAspect {
             if (interceptor.checkParams()) {
                 validateParams(method,arguments);
             }
-            point.proceed();
+            return point.proceed();
         } catch (BusinessException e){
             logger.error("业务异常",e);
             throw e;
@@ -61,7 +61,6 @@ public class OperationAspect {
             logger.error("全局拦截器异常",throwable);
             throw new BusinessException(ResponseCodeEnum.CODE_500);
         }
-        return null;
     }
 
     public static void checkObjValue(Parameter parameter,Object value){
@@ -99,6 +98,4 @@ public class OperationAspect {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
     }
-
-
 }
