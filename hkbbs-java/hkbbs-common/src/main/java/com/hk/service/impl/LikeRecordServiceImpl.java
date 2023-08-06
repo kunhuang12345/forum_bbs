@@ -3,8 +3,16 @@ package com.hk.service.impl;
 import java.util.List;
 import java.util.Date;
 
+import com.hk.entity.constants.Constants;
+import com.hk.entity.enums.*;
+import com.hk.entity.po.ForumArticle;
+import com.hk.entity.po.UserMessage;
+import com.hk.entity.query.ForumArticleQuery;
+import com.hk.entity.query.UserMessageQuery;
+import com.hk.exception.BusinessException;
+import com.hk.mapper.ForumArticleMapper;
+import com.hk.mapper.UserMessageMapper;
 import com.hk.utils.DateUtils;
-import com.hk.entity.enums.DateTimePatternEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import com.hk.service.LikeRecordService;
@@ -13,8 +21,8 @@ import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.query.LikeRecordQuery;
 import com.hk.mapper.LikeRecordMapper;
 import com.hk.entity.query.SimplePage;
-import com.hk.entity.enums.PageSize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -28,6 +36,12 @@ public class LikeRecordServiceImpl implements LikeRecordService {
 
 	@Resource
 	private LikeRecordMapper<LikeRecord, LikeRecordQuery> likeRecordMapper;
+
+	@Resource
+	private UserMessageMapper<UserMessage, UserMessageQuery> userMessageMapper;
+
+	@Resource
+	private ForumArticleMapper<ForumArticle, ForumArticleQuery> forumArticleMapper;
 
 	/**
 	 * 根据条件查询列表
@@ -123,6 +137,56 @@ public class LikeRecordServiceImpl implements LikeRecordService {
 	 */
 	public Integer deleteLikeRecordByObjectIdAndUserIdAndOpType(String objectId, String userId, Integer opType) {
 		return this.likeRecordMapper.deleteByObjectIdAndUserIdAndOpType(objectId, userId, opType);
+	}
+
+    @Override
+	@Transactional(rollbackFor = Exception.class)
+    public void doLike(String objectId, String userId, String nickName, OperateRecordOpTypeEnum opTypeEnum) throws BusinessException {
+		UserMessage userMessage = new UserMessage();
+		userMessage.setCreateTime(new Date());
+		switch (opTypeEnum) {
+			case ARTICLE_LIKE:
+				ForumArticle article = forumArticleMapper.selectByArticleId(objectId);
+				if (article == null) {
+					throw new BusinessException("文章不存在");
+				}
+
+				articleLike(article, objectId, userId, opTypeEnum);
+				userMessage.setArticleId(objectId);
+				userMessage.setArticleTitle(article.getTitle());
+				userMessage.setMessageType(MessageTypeEnum.ARTICLE_LIKE.getType());
+				userMessage.setReceivedUserId(article.getUserId());
+				userMessage.setCommentId(Constants.ZERO);
+				break;
+			case COMMENT_LIKE:
+				break;
+		}
+		userMessage.setSendUserId(userId);
+		userMessage.setSendNickName(nickName);
+		userMessage.setStatus(MessageStatusEnum.NO_READ.getStatus());
+		if (!userId.equals(userMessage.getReceivedUserId())) {
+			UserMessage message = userMessageMapper.selectByArticleIdAndCommentIdAndSendUserIdAndMessageType(userMessage.getArticleId(),
+					userMessage.getCommentId(), userMessage.getSendUserId(), userMessage.getMessageType());
+			if (message == null)
+				userMessageMapper.insert(userMessage);
+		}
+    }
+
+	private void articleLike(ForumArticle forumArticle, String objId, String userId, OperateRecordOpTypeEnum opTypeEnum) throws BusinessException {
+		LikeRecord record = likeRecordMapper.selectByObjectIdAndUserIdAndOpType(objId, userId, opTypeEnum.getType());
+		if (record != null) {
+			likeRecordMapper.deleteByObjectIdAndUserIdAndOpType(objId,userId,opTypeEnum.getType());
+			forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.GOOD_COUNT.getType(), -Constants.ONE,objId);
+		} else {
+			LikeRecord likeRecord = new LikeRecord();
+			likeRecord.setObjectId(objId);
+			likeRecord.setCreateTime(new Date());
+			likeRecord.setOpType(opTypeEnum.getType());
+			likeRecord.setUserId(userId);
+			likeRecord.setAuthorUserId(forumArticle.getUserId());
+			likeRecordMapper.insert(likeRecord);
+			forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.GOOD_COUNT.getType(), Constants.ONE,objId);
+		}
 	}
 
 }

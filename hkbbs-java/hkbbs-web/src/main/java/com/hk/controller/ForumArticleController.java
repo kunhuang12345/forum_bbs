@@ -97,4 +97,12 @@ public class ForumArticleController extends ABaseController {
             throw new BusinessException(ResponseCodeEnum.CODE_404);
         }
     }
+
+    @RequestMapping("/doLike")
+    @GlobalInterceptor(checkLogin = true)
+    public ResponseVO doLike(HttpSession session, @VerifyParam(required = true) String articleId) throws BusinessException {
+        SessionWebUserDto userInfoFromSession = getUserInfoFromSession(session);
+        likeRecordService.doLike(articleId,userInfoFromSession.getUserId(),userInfoFromSession.getNickName(),OperateRecordOpTypeEnum.ARTICLE_LIKE);
+        return getSuccessResponseVO("已点赞");
+    }
 }

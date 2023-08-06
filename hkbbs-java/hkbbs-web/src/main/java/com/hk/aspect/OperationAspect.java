@@ -2,10 +2,12 @@ package com.hk.aspect;
 
 import com.hk.annotation.GlobalInterceptor;
 import com.hk.annotation.VerifyParam;
+import com.hk.entity.constants.Constants;
 import com.hk.entity.enums.ResponseCodeEnum;
 import com.hk.exception.BusinessException;
 import com.hk.utils.StringTools;
 import com.hk.utils.VerifyUtils;
+import okhttp3.Request;
 import org.apache.commons.lang3.ArrayUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -13,7 +15,12 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
@@ -44,7 +51,7 @@ public class OperationAspect {
 
             // 校验登录
             if (interceptor.checkLogin()) {
-
+                checkLogin();
             }
             // 校验参数
             if (interceptor.checkParams()) {
@@ -63,9 +70,15 @@ public class OperationAspect {
         }
     }
 
-    public static void checkObjValue(Parameter parameter,Object value){
-
+    private void checkLogin() throws BusinessException {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        HttpSession session = request.getSession();
+        Object attribute = session.getAttribute(Constants.SESSION_KEY);
+        if (attribute == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_901);
+        }
     }
+
 
     private void validateParams(Method method,Object[] arguments) throws BusinessException {
         Parameter[] parameters = method.getParameters();

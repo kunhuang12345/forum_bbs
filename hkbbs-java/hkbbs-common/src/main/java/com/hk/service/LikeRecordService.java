@@ -3,6 +3,8 @@ package com.hk.service;
 import java.util.List;
 import java.util.Date;
 
+import com.hk.entity.enums.OperateRecordOpTypeEnum;
+import com.hk.exception.BusinessException;
 import com.hk.utils.DateUtils;
 import com.hk.entity.enums.DateTimePatternEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -78,5 +80,10 @@ public interface LikeRecordService {
 	 * 根据ObjectIdAndUserIdAndOpType删除
 	 */
 	Integer deleteLikeRecordByObjectIdAndUserIdAndOpType(String objectId, String userId, Integer opType);
+
+	/**
+	 * 点赞
+	 */
+	void doLike(String objectId, String UserId, String nickName, OperateRecordOpTypeEnum opTypeEnum) throws BusinessException;
 
 }
