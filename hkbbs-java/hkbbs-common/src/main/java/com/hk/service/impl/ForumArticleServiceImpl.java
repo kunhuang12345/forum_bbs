@@ -3,8 +3,10 @@ package com.hk.service.impl;
 import java.util.List;
 import java.util.Date;
 
+import com.hk.entity.constants.Constants;
+import com.hk.entity.enums.*;
+import com.hk.exception.BusinessException;
 import com.hk.utils.DateUtils;
-import com.hk.entity.enums.DateTimePatternEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import com.hk.service.ForumArticleService;
@@ -13,7 +15,6 @@ import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.query.ForumArticleQuery;
 import com.hk.mapper.ForumArticleMapper;
 import com.hk.entity.query.SimplePage;
-import com.hk.entity.enums.PageSize;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -102,6 +103,17 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 	 */
 	public Integer deleteForumArticleByArticleId(String articleId) {
 		return this.forumArticleMapper.deleteByArticleId(articleId);
+	}
+
+	public ForumArticle readArticle(String articleId) throws BusinessException {
+		ForumArticle forumArticle = this.forumArticleMapper.selectByArticleId(articleId);
+		if (forumArticle == null) {
+			throw new BusinessException(ResponseCodeEnum.CODE_404);
+		}
+		if (ArticleStatusEnum.AUDIT.getStatus().equals(forumArticle.getStatus())) {
+			this.forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.READ_COUNT.getType(), Constants.ONE,articleId);
+		}
+		return forumArticle;
 	}
 
 }

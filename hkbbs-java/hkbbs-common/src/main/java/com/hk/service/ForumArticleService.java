@@ -3,6 +3,7 @@ package com.hk.service;
 import java.util.List;
 import java.util.Date;
 
+import com.hk.exception.BusinessException;
 import com.hk.utils.DateUtils;
 import com.hk.entity.enums.DateTimePatternEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -63,5 +64,7 @@ public interface ForumArticleService {
 	 * 根据ArticleId删除
 	 */
 	Integer deleteForumArticleByArticleId(String articleId);
+
+	ForumArticle readArticle(String articleId) throws BusinessException;
 
 }

@@ -24,5 +24,7 @@ public interface ForumArticleMapper<T, P> extends BaseMapper<T, P> {
 	 */
 	Integer deleteByArticleId(@Param("article_id") String articleId);
 
+	void updateArticleCount(@Param("updateType") Integer updateType,@Param("changeCount") Integer changCount, @Param("articleId") String articleId);
+
 
 }
