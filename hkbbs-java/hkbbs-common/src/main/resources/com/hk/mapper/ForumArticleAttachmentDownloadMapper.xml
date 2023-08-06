@@ -149,7 +149,7 @@
 				article_id = #{bean.articleId},
 			</if>
 			<if test="bean.downloadCount != null">
-				download_count = #{bean.downloadCount},
+				download_count = download_count+1,
 			</if>
 		</trim>
 	</insert>

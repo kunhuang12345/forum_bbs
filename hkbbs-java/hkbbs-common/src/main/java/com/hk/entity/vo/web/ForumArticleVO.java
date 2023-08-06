@@ -1,4 +1,4 @@
-package com.hk.entity.vo;
+package com.hk.entity.vo.web;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;

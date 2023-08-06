@@ -24,5 +24,7 @@ public interface ForumArticleAttachmentMapper<T, P> extends BaseMapper<T, P> {
 	 */
 	Integer deleteByFileId(@Param("file_id") String fileId);
 
+	void updateDownloadCount(@Param("fileId") String fileId);
+
 
 }

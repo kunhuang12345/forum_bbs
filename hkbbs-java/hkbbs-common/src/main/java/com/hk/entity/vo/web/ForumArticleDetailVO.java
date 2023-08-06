@@ -1,4 +1,4 @@
-package com.hk.entity.vo;
+package com.hk.entity.vo.web;
 
 
 public class ForumArticleDetailVO {

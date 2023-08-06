@@ -1,9 +1,12 @@
 package com.hk.service;
 
 import java.util.List;
+
+import com.hk.entity.dto.SessionWebUserDto;
 import com.hk.entity.po.ForumArticleAttachment;
 import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.query.ForumArticleAttachmentQuery;
+import com.hk.exception.BusinessException;
 
 /**
  * @Description:文件信息Service
@@ -58,4 +61,5 @@ public interface ForumArticleAttachmentService {
 	 */
 	Integer deleteForumArticleAttachmentByFileId(String fileId);
 
+    ForumArticleAttachment downloadAttachment(String fileId, SessionWebUserDto userInfoFromSession) throws BusinessException;
 }

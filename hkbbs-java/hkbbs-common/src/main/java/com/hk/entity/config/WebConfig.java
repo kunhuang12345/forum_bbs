@@ -11,6 +11,8 @@ public class WebConfig extends AppConfig{
     @Value("${admin.emails:}")
     private String adminEmails;
 
+
+
     public String getAdminEmails() {
         return adminEmails;
     }
@@ -18,4 +20,6 @@ public class WebConfig extends AppConfig{
     public String getSendUserName() {
         return sendUserName;
     }
+
+
 }

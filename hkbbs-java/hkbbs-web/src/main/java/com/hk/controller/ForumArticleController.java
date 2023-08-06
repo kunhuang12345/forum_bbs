@@ -1,36 +1,46 @@
 package com.hk.controller;
 
-import com.fasterxml.jackson.datatype.jsr310.deser.InstantDeserializer;
 import com.hk.annotation.GlobalInterceptor;
 import com.hk.annotation.VerifyParam;
 import com.hk.controller.base.ABaseController;
+import com.hk.entity.config.WebConfig;
 import com.hk.entity.constants.Constants;
 import com.hk.entity.dto.SessionWebUserDto;
 import com.hk.entity.enums.ArticleOrderTypeEnum;
 import com.hk.entity.enums.ArticleStatusEnum;
 import com.hk.entity.enums.OperateRecordOpTypeEnum;
 import com.hk.entity.enums.ResponseCodeEnum;
-import com.hk.entity.po.ForumArticle;
-import com.hk.entity.po.ForumArticleAttachment;
-import com.hk.entity.po.LikeRecord;
+import com.hk.entity.po.*;
 import com.hk.entity.query.ForumArticleAttachmentQuery;
 import com.hk.entity.query.ForumArticleQuery;
 import com.hk.entity.vo.*;
+import com.hk.entity.vo.web.ForumArticleAttachmentVO;
+import com.hk.entity.vo.web.ForumArticleDetailVO;
+import com.hk.entity.vo.web.ForumArticleVO;
+import com.hk.entity.vo.web.UserDownloadInfoVO;
 import com.hk.exception.BusinessException;
-import com.hk.service.ForumArticleAttachmentService;
-import com.hk.service.ForumArticleService;
-import com.hk.service.LikeRecordService;
+import com.hk.service.*;
 import com.hk.utils.CopyUtils;
+import org.apache.catalina.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RequestMapping("/forum")
 @RestController
 public class ForumArticleController extends ABaseController {
+
+    private Logger logger = LoggerFactory.getLogger(ForumArticleController.class);
 
     @Resource
     private ForumArticleService forumArticleService;
@@ -40,6 +50,15 @@ public class ForumArticleController extends ABaseController {
 
     @Resource
     private LikeRecordService likeRecordService;
+
+    @Resource
+    private UserInfoService userInfoService;
+
+    @Resource
+    private ForumArticleAttachmentDownloadService articleAttachmentDownloadService;
+
+    @Resource
+    private WebConfig webConfig;
 
     @RequestMapping("/loadArticle")
     public ResponseVO loadArticle(HttpSession session, Integer boardId, Integer pBoardId, Integer orderType, Integer pageNo) {
@@ -105,4 +124,74 @@ public class ForumArticleController extends ABaseController {
         likeRecordService.doLike(articleId,userInfoFromSession.getUserId(),userInfoFromSession.getNickName(),OperateRecordOpTypeEnum.ARTICLE_LIKE);
         return getSuccessResponseVO("已点赞");
     }
+
+    @RequestMapping("/getUserDownloadInfo")
+    @GlobalInterceptor(checkLogin = true,checkParams = true)
+    public ResponseVO getUserDownloadInfo(HttpSession session, @VerifyParam(required = true) String fileId) throws BusinessException {
+        SessionWebUserDto userInfoFromSession = getUserInfoFromSession(session);
+
+        UserInfo userInfo = userInfoService.getUserInfoByUserId(userInfoFromSession.getUserId());
+
+        UserDownloadInfoVO downloadInfoVO = new UserDownloadInfoVO();
+        downloadInfoVO.setUserIntegral(userInfo.getCurrentIntegral());
+
+        ForumArticleAttachmentDownload articleAttachmentDownload = articleAttachmentDownloadService.getForumArticleAttachmentDownloadByFileIdAndUserId(fileId,
+                userInfoFromSession.getUserId());
+
+        if (articleAttachmentDownload != null) {
+            downloadInfoVO.setHaveDownload(true);
+        }
+
+        return getSuccessResponseVO(downloadInfoVO);
+    }
+
+    @RequestMapping("/attachmentDownload")
+    @GlobalInterceptor(checkParams = true,checkLogin = true)
+    public void attachmentDownload(HttpSession session, HttpServletRequest request , HttpServletResponse response,
+                                   @VerifyParam(required = true) String fileId) throws BusinessException {
+        ForumArticleAttachment attachment = articleAttachmentService.downloadAttachment(fileId, getUserInfoFromSession(session));
+        InputStream in = null;
+        OutputStream out = null;
+        String downloadFileName = attachment.getFileName();
+        String filePath = webConfig.getProjectFolder() + Constants.FILE_FOLDER_FILE + Constants.FILE_FOLDER_ATTACHMENT + attachment.getFilePath();
+        File file = new File(filePath);
+        try {
+            in = new FileInputStream(file);
+            out = response.getOutputStream();
+            response.setContentType("application/x-msdownload; charset=UTF-8");
+            // 解决中文乱码问题
+            if (request.getHeader("User-Agent").toLowerCase().indexOf("mise") > 0) { //IE浏览器
+                downloadFileName = URLEncoder.encode(downloadFileName, StandardCharsets.UTF_8);
+            } else {
+                downloadFileName = new String(downloadFileName.getBytes(StandardCharsets.UTF_8), "ISO8859-1");
+            }
+            response.setHeader("content-Disposition","attachment;filename=\"" + downloadFileName + "\"");
+            byte[] byteData = new byte[1024];
+            int len = 0;
+            while ((len = in.read(byteData)) != -1) {
+                out.write(byteData,0,len);
+            }
+            out.flush();
+        } catch (Exception e) {
+            logger.error("下载异常",e);
+            throw new BusinessException("下载失败");
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    logger.error("IO异常",e);
+                }
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    logger.error("IO异常",e);
+                }
+            }
+        }
+    }
+
+
 }
