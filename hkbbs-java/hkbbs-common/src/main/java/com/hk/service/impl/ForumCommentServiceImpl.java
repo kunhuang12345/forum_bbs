@@ -1,7 +1,10 @@
 package com.hk.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.hk.utils.DateUtils;
 import com.hk.entity.enums.DateTimePatternEnum;
@@ -33,7 +36,28 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 	 * 根据条件查询列表
 	 */
 	public List<ForumComment> findListByParam(ForumCommentQuery query) {
-		return this.forumCommentMapper.selectList(query);
+
+		List<ForumComment> list = forumCommentMapper.selectList(query);
+
+		// 获取二级评论
+		if (query.getLoadChildren() != null && query.getLoadChildren()) {
+			ForumCommentQuery subQuery = new ForumCommentQuery();
+			subQuery.setQueryLikeType(query.getQueryLikeType());
+			subQuery.setCurrentUserId(query.getCurrentUserId());
+			subQuery.setArticleId(query.getArticleId());
+			subQuery.setStatus(query.getStatus());
+			List<Integer> pcommentIdList = list.stream().map(ForumComment::getCommentId).distinct().collect(Collectors.toList());
+			subQuery.setPcommentIdList(pcommentIdList);
+			List<ForumComment> forumCommentList = forumCommentMapper.selectList(subQuery);
+
+			// 将p_comment_id存入integer，子评论存入List集合中
+			Map<Integer,List<ForumComment>> tempMap = forumCommentList.stream().collect(Collectors.groupingBy(ForumComment::getPCommentId));
+			list.forEach(item -> {
+				item.setChildren(tempMap.get(item.getCommentId()));
+			});
+		}
+
+		return list;
 	}
 
 	/**

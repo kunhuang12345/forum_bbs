@@ -1,7 +1,7 @@
 package com.hk.entity.query;
 
 import java.util.Date;
-
+import java.util.List;
 
 
 /**
@@ -100,6 +100,68 @@ public class ForumCommentQuery extends BaseQuery {
 	 * 0:待审核  1:已审核
 	 */
 	private Integer status;
+
+	/**
+	 * 是否加载子评论
+	 */
+	private Boolean loadChildren;
+
+	/**
+	 * 设置当前用户id
+	 */
+	private String currentUserId;
+
+	/**
+	 * 是否已点赞
+	 */
+	private Boolean queryLikeType;
+
+	/**
+	 * 父评论id集合
+	 */
+	private List<Integer> pcommentIdList;
+
+
+	public List<Integer> getPcommentIdList() {
+		return pcommentIdList;
+	}
+
+	public void setPcommentIdList(List<Integer> pcommentIdList) {
+		this.pcommentIdList = pcommentIdList;
+	}
+
+
+	public Boolean getQueryLikeType() {
+		return queryLikeType;
+	}
+
+	public void setQueryLikeType(Boolean queryLikeType) {
+		this.queryLikeType = queryLikeType;
+	}
+
+	public String getCurrentUserId() {
+		return currentUserId;
+	}
+
+	public void setCurrentUserId(String currentUserId) {
+		this.currentUserId = currentUserId;
+	}
+
+	public Integer getpCommentId() {
+		return pCommentId;
+	}
+
+	public void setpCommentId(Integer pCommentId) {
+		this.pCommentId = pCommentId;
+	}
+
+	public Boolean getLoadChildren() {
+		return loadChildren;
+	}
+
+	public void setLoadChildren(Boolean loadChildren) {
+		this.loadChildren = loadChildren;
+	}
 
 	public void setCommentId(Integer commentId) {
 		this.commentId = commentId;

@@ -133,6 +133,12 @@
 		<if test="query.postTimeEnd != null and query.postTimeEnd !=''">
 			<![CDATA[ and post_time < date_sub(str_to_date(#{query.postTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
 		</if>
+		<if test="query.pcommentIdList!=null and query.pcommentIdList.size()>0">
+			and p_comment_id in(<foreach collection="query.pcommentIdList" item="item" separator=",">#{item}</foreach>)
+		</if>
+		<if test="query.currentUserId!=null">
+			and (status=1 or (status=0 and user_id=#{query.currentUserId}))
+		</if>
 	</sql>
 
 	<!--通用查询条件-->
@@ -146,8 +152,11 @@
 	<!--查询列表-->
 	<select id="selectList" resultMap="base_result_map">
 		select 
-		<include refid="base_column_list"/> 
-		from forum_comment
+		<include refid="base_column_list"/>
+		<if test="query.queryLikeType!=null and query.queryLikeType and query.currentUserId!=null">
+			,(select count(1) from like_record r where r.object_id=c.comment_id and r.user_id=#{query.currentUserId}) likeType
+		</if>
+		from forum_comment c
 		<include refid="query_condition"/>
 		<if test="query.orderBy != null">
 		order by ${query.orderBy}

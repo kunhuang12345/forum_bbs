@@ -2,6 +2,7 @@ package com.hk.entity.po;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import com.hk.utils.DateUtils;
 import com.hk.entity.enums.DateTimePatternEnum;
@@ -15,6 +16,10 @@ import org.springframework.format.annotation.DateTimeFormat;
  * @date:2023/07/29
  */
 public class ForumComment implements Serializable {
+	/**
+	 * 是否点赞
+	 */
+	private Integer likeType;
 
 	/**
 	 * 评论ID
@@ -87,6 +92,27 @@ public class ForumComment implements Serializable {
 	 * 0:待审核  1:已审核
 	 */
 	private Integer status;
+
+	/**
+	 * 子评论
+	 */
+	private List<ForumComment> children;
+
+	public List<ForumComment> getChildren() {
+		return children;
+	}
+
+	public void setChildren(List<ForumComment> children) {
+		this.children = children;
+	}
+
+	public Integer getLikeType() {
+		return likeType;
+	}
+
+	public void setLikeType(Integer likeType) {
+		this.likeType = likeType;
+	}
 
 	public void setCommentId(Integer commentId) {
 		this.commentId = commentId;
@@ -203,7 +229,7 @@ public class ForumComment implements Serializable {
 	@Override
 	public String toString() {
 		return "评论ID:" + (commentId == null ? "空" : commentId) + "," + 
-				"父级评论ID:" + (pCommentId == null ? "空" : pCommentId) + "," + 
+				"父级评论ID:" + (pCommentId == null ? "空" : pCommentId) + "," +
 				"文章ID:" + (articleId == null ? "空" : articleId) + "," + 
 				"回复内容:" + (content == null ? "空" : content) + "," + 
 				"图片:" + (imgPath == null ? "空" : imgPath) + "," + 
