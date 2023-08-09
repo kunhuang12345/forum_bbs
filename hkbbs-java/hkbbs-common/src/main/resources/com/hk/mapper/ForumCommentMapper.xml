@@ -491,10 +491,22 @@
 
 	<!--根据CommentId删除-->
 	<delete id="deleteByCommentId">
-		delete from forum_comment
+		delete
+		from forum_comment
 		where comment_id=#{comment_id}
 	</delete>
 
+	<update id="updateCommentGoodCount">
+		update forum_comment
+		set good_count = good_count+#{changeCount}
+		where comment_id=#{commentId}
+	</update>
+
+	<update id="updateTopTypeByArticleId">
+		update forum_comment
+		set top_type = 0
+		where article_id=#{articleId}
+	</update>
 
 
 </mapper>

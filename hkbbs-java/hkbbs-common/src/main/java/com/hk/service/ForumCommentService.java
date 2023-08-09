@@ -3,6 +3,7 @@ package com.hk.service;
 import java.util.List;
 import java.util.Date;
 
+import com.hk.exception.BusinessException;
 import com.hk.utils.DateUtils;
 import com.hk.entity.enums.DateTimePatternEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -64,4 +65,5 @@ public interface ForumCommentService {
 	 */
 	Integer deleteForumCommentByCommentId(Integer commentId);
 
+    void changeTopType(String userId,Integer commentId,Integer topType) throws BusinessException;
 }

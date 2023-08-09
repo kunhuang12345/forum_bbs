@@ -7,9 +7,11 @@ import com.hk.entity.constants.Constants;
 import com.hk.entity.dto.SessionWebUserDto;
 import com.hk.entity.dto.SysSettingDto;
 import com.hk.entity.enums.ArticleStatusEnum;
+import com.hk.entity.enums.OperateRecordOpTypeEnum;
 import com.hk.entity.enums.PageSize;
 import com.hk.entity.enums.ResponseCodeEnum;
 import com.hk.entity.po.ForumComment;
+import com.hk.entity.po.LikeRecord;
 import com.hk.entity.query.ForumCommentQuery;
 import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.vo.ResponseVO;
@@ -66,5 +68,30 @@ public class ForumCommentController extends ABaseController {
         return getSuccessResponseVO(listByPage);
     }
 
+    @RequestMapping("/doLike")
+    @GlobalInterceptor(checkParams = true, checkLogin = true)
+    public ResponseVO doLike(HttpSession session,
+                             @VerifyParam(required = true) Integer commentId) throws BusinessException {
+        SessionWebUserDto userDto = getUserInfoFromSession(session);
+        String objectId = String.valueOf(commentId);
+        likeRecordService.doLike(objectId,userDto.getUserId(),userDto.getNickName(), OperateRecordOpTypeEnum.COMMENT_LIKE);
+
+        LikeRecord likeRecord = likeRecordService.getLikeRecordByObjectIdAndUserIdAndOpType(objectId,userDto.getUserId(),OperateRecordOpTypeEnum.COMMENT_LIKE.getType());
+
+        ForumComment forumComment = forumCommentService.getForumCommentByCommentId(commentId);
+
+        forumComment.setLikeType(likeRecord == null? Constants.ZERO : Constants.ONE);
+
+        return getSuccessResponseVO(forumComment);
+    }
+
+    @RequestMapping("/changeTopType")
+    @GlobalInterceptor(checkParams = true, checkLogin = true)
+    public ResponseVO changeTopType(HttpSession session,
+                                    @VerifyParam(required = true) Integer commentId,
+                                    @VerifyParam(required = true) Integer topType) throws BusinessException {
+        forumCommentService.changeTopType(getUserInfoFromSession(session).getUserId(), commentId,topType);
+        return getSuccessResponseVO(null);
+    }
 
 }

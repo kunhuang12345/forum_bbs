@@ -6,6 +6,12 @@ import java.util.Date;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.hk.entity.enums.CommentTopTypeEnum;
+import com.hk.entity.enums.ResponseCodeEnum;
+import com.hk.entity.po.ForumArticle;
+import com.hk.entity.query.ForumArticleQuery;
+import com.hk.exception.BusinessException;
+import com.hk.mapper.ForumArticleMapper;
 import com.hk.utils.DateUtils;
 import com.hk.entity.enums.DateTimePatternEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -18,6 +24,7 @@ import com.hk.mapper.ForumCommentMapper;
 import com.hk.entity.query.SimplePage;
 import com.hk.entity.enums.PageSize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -28,6 +35,9 @@ import javax.annotation.Resource;
  */
 @Service("forumCommentService")
 public class ForumCommentServiceImpl implements ForumCommentService {
+
+	@Resource
+	private ForumArticleMapper<ForumArticle, ForumArticleQuery> forumArticleMapper;
 
 	@Resource
 	private ForumCommentMapper<ForumComment, ForumCommentQuery> forumCommentMapper;
@@ -126,6 +136,44 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 	 */
 	public Integer deleteForumCommentByCommentId(Integer commentId) {
 		return this.forumCommentMapper.deleteByCommentId(commentId);
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public void changeTopType(String userId, Integer commentId, Integer topType) throws BusinessException {
+		CommentTopTypeEnum topTypeEnum = CommentTopTypeEnum.getByType(topType);
+		// 错误的置顶类型
+		if (topTypeEnum == null) {
+			throw new BusinessException(ResponseCodeEnum.CODE_600);
+		}
+		ForumComment forumComment = forumCommentMapper.selectByCommentId(commentId);
+		// 错误的commentId
+		if (forumComment == null) {
+			throw new BusinessException(ResponseCodeEnum.CODE_600);
+		}
+
+		ForumArticle forumArticle = forumArticleMapper.selectByArticleId(forumComment.getArticleId());
+		// 文章不存在
+		if (forumArticle == null) {
+			throw new BusinessException(ResponseCodeEnum.CODE_600);
+		}
+
+		// 不是本人操作
+		if (!forumArticle.getUserId().equals(userId) || forumComment.getPCommentId() != 0) {
+			throw new BusinessException(ResponseCodeEnum.CODE_600);
+		}
+
+		// 已实现直接返回
+		if (forumComment.getTopType().equals(topType)) {
+			return;
+		}
+
+		if (CommentTopTypeEnum.TOP.getType().equals(topType)) {
+			forumCommentMapper.updateTopTypeByArticleId(forumArticle.getArticleId());
+		}
+		ForumComment updateInfo = new ForumComment();
+		updateInfo.setTopType(topType);
+		forumCommentMapper.updateByCommentId(updateInfo,commentId);
 	}
 
 }
