@@ -60,7 +60,7 @@ public class FileUtils {
             String localPath = month + "/" + fileName;
 
             if (uploadTypeEnum == FileUploadTypeEnum.AVATAR) {
-                // TODO 头像上传
+                //头像上传
                 targetFileFolder = new File(baseFolder + folder);
                 targetFile = new File(targetFileFolder.getPath() + "/" + fileName);
                 localPath = folder + Constants.AVATAR_SUFFIX;
