@@ -25,4 +25,22 @@ public class StringTools {
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
+    /**
+     * 转换js代码
+     * @param content
+     * @return
+     */
+    public static String escapeHtml(String content) {
+        if (StringTools.isEmpty(content)) {
+            return null;
+        }
+        content = content.replace("<","&lt;");
+        content = content.replace(" ", "&nbsp;");
+        content = content.replace("\n", "<br>");
+        return content;
+    }
+
+    public static String getFileName(String fileName) {
+        return fileName.substring(0,fileName.lastIndexOf("."));
+    }
 }

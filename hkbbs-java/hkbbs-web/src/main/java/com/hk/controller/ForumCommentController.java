@@ -6,10 +6,7 @@ import com.hk.controller.base.ABaseController;
 import com.hk.entity.constants.Constants;
 import com.hk.entity.dto.SessionWebUserDto;
 import com.hk.entity.dto.SysSettingDto;
-import com.hk.entity.enums.ArticleStatusEnum;
-import com.hk.entity.enums.OperateRecordOpTypeEnum;
-import com.hk.entity.enums.PageSize;
-import com.hk.entity.enums.ResponseCodeEnum;
+import com.hk.entity.enums.*;
 import com.hk.entity.po.ForumComment;
 import com.hk.entity.po.LikeRecord;
 import com.hk.entity.query.ForumCommentQuery;
@@ -18,12 +15,15 @@ import com.hk.entity.vo.ResponseVO;
 import com.hk.exception.BusinessException;
 import com.hk.service.ForumCommentService;
 import com.hk.service.LikeRecordService;
+import com.hk.utils.StringTools;
 import com.hk.utils.SysCacheUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 
 @RequestMapping("/comment")
@@ -92,6 +92,49 @@ public class ForumCommentController extends ABaseController {
                                     @VerifyParam(required = true) Integer topType) throws BusinessException {
         forumCommentService.changeTopType(getUserInfoFromSession(session).getUserId(), commentId,topType);
         return getSuccessResponseVO(null);
+    }
+
+    @RequestMapping("/postComment")
+    @GlobalInterceptor(checkParams = true, checkLogin = true)
+    public ResponseVO postComment(HttpSession session,
+                                  @VerifyParam(required = true) String articleId,
+                                  @VerifyParam(required = true) Integer pComment,
+                                  @VerifyParam(min = 5,max = 800) String content,
+                                  MultipartFile image,
+                                  String replyUserId
+                                  ) throws BusinessException {
+        if (!SysCacheUtils.getSysSetting().getCommentSetting().getCommentOpen()) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        if (StringTools.isEmpty(content) && image == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+
+        SessionWebUserDto userDto = getUserInfoFromSession(session);
+        content = StringTools.escapeHtml(content);
+
+        ForumComment comment = new ForumComment();
+
+        // 塞入评论基本信息
+        comment.setUserId(userDto.getUserId());
+        comment.setNickName(userDto.getNickName());
+        comment.setUserIpAddress(userDto.getProvince());
+        comment.setPCommentId(pComment);
+        comment.setArticleId(articleId);
+        comment.setContent(content);
+        comment.setReplyUserId(replyUserId);
+        comment.setTopType(CommentTopTypeEnum.NO_TOP.getType());
+        forumCommentService.postComment(comment,image);
+        if (pComment != 0) {
+            ForumCommentQuery forumCommentQuery = new ForumCommentQuery();
+            forumCommentQuery.setArticleId(articleId);
+            forumCommentQuery.setPCommentId(pComment);
+            forumCommentQuery.setOrderBy("comment_id desc");
+            forumCommentQuery.setStatus(Constants.ONE);
+            List<ForumComment> children = forumCommentService.findListByParam(forumCommentQuery);
+            return getSuccessResponseVO(children);
+        }
+        return getSuccessResponseVO(comment);
     }
 
 }

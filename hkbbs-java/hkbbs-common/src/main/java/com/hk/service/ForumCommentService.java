@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.hk.entity.po.ForumComment;
 import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.query.ForumCommentQuery;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @Description:评论Service
@@ -66,4 +67,6 @@ public interface ForumCommentService {
 	Integer deleteForumCommentByCommentId(Integer commentId);
 
     void changeTopType(String userId,Integer commentId,Integer topType) throws BusinessException;
+
+	void postComment(ForumComment comment, MultipartFile image) throws BusinessException;
 }

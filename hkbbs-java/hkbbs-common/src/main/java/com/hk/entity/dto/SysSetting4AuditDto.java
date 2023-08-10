@@ -11,7 +11,7 @@ public class SysSetting4AuditDto {
     /**
      * 评论是需要审核
      */
-    private Boolean commonAudit;
+    private Boolean commentAudit;
 
     public Boolean getPostAudit() {
         return postAudit;
@@ -21,11 +21,11 @@ public class SysSetting4AuditDto {
         this.postAudit = postAudit;
     }
 
-    public Boolean getCommonAudit() {
-        return commonAudit;
+    public Boolean getCommentAudit() {
+        return commentAudit;
     }
 
-    public void setCommonAudit(Boolean commonAudit) {
-        this.commonAudit = commonAudit;
+    public void setCommentAudit(Boolean commonAudit) {
+        this.commentAudit = commonAudit;
     }
 }
