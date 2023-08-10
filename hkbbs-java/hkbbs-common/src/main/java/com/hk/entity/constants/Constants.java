@@ -25,4 +25,5 @@ public class Constants {
     public static final String AVATAR_DEFAULT = "default_avatar.jpg";
     public static final Integer LENGTH_200 = 200;
     public static final Integer LENGTH_190 = 190;
+    public static final Integer FILE_SIZE_1M = 1024*1024;
 }

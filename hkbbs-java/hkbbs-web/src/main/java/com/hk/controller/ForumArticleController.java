@@ -6,10 +6,7 @@ import com.hk.controller.base.ABaseController;
 import com.hk.entity.config.WebConfig;
 import com.hk.entity.constants.Constants;
 import com.hk.entity.dto.SessionWebUserDto;
-import com.hk.entity.enums.ArticleOrderTypeEnum;
-import com.hk.entity.enums.ArticleStatusEnum;
-import com.hk.entity.enums.OperateRecordOpTypeEnum;
-import com.hk.entity.enums.ResponseCodeEnum;
+import com.hk.entity.enums.*;
 import com.hk.entity.po.*;
 import com.hk.entity.query.ForumArticleAttachmentQuery;
 import com.hk.entity.query.ForumArticleQuery;
@@ -21,11 +18,13 @@ import com.hk.entity.vo.web.UserDownloadInfoVO;
 import com.hk.exception.BusinessException;
 import com.hk.service.*;
 import com.hk.utils.CopyUtils;
+import com.hk.utils.StringTools;
 import org.apache.catalina.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -59,6 +58,10 @@ public class ForumArticleController extends ABaseController {
 
     @Resource
     private WebConfig webConfig;
+
+    @Resource
+    private ForumBoardService forumBoardService;
+
 
     @RequestMapping("/loadArticle")
     public ResponseVO loadArticle(HttpSession session, Integer boardId, Integer pBoardId, Integer orderType, Integer pageNo) {
@@ -191,6 +194,61 @@ public class ForumArticleController extends ABaseController {
                 }
             }
         }
+    }
+
+    @RequestMapping("/loadBoard4Post")
+    @GlobalInterceptor(checkLogin = true)
+    public ResponseVO loadBoard4Post(HttpSession session) {
+        SessionWebUserDto userDto = getUserInfoFromSession(session);
+        Integer postType = null;
+        if (!userDto.getAdmin()) {
+            postType = Constants.ONE;
+        }
+
+        List<ForumBoard> bordTree = forumBoardService.getBordTree(postType);
+        return getSuccessResponseVO(bordTree);
+    }
+
+    @RequestMapping("/postArticle")
+    @GlobalInterceptor(checkLogin = true, checkParams = true)
+    public ResponseVO postArticle(HttpSession session,
+                                  MultipartFile cover,
+                                  MultipartFile attachment,
+                                  Integer integral,
+                                  @VerifyParam(required = true,max = 150) String title,
+                                  @VerifyParam(required = true) Integer pBoardId,
+                                  Integer boardId,
+                                  @VerifyParam(max = 200) String summary,
+                                  @VerifyParam(required = true) Integer editorType,
+                                  @VerifyParam(required = true) String content,
+                                  String markdownContent) throws BusinessException {
+
+        title = StringTools.escapeHtml(title);
+        SessionWebUserDto userDto = getUserInfoFromSession(session);
+        ForumArticle forumArticle = new ForumArticle();
+        forumArticle.setPBoardId(pBoardId);
+        forumArticle.setBoardId(boardId);
+        forumArticle.setTitle(title);
+        forumArticle.setSummary(summary);
+        forumArticle.setContent(content);
+        if (EditorTypeEnum.getByType(editorType) == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        if (EditorTypeEnum.MARKDOWN.getType().equals(editorType) && StringTools.isEmpty(markdownContent)) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        forumArticle.setMarkdownContent(markdownContent);
+        forumArticle.setEditorType(editorType);
+        forumArticle.setUserId(userDto.getUserId());
+        forumArticle.setNickName(userDto.getNickName());
+        forumArticle.setUserIpAddress(userDto.getProvince());
+
+        // 附件信息
+        ForumArticleAttachment forumArticleAttachment = new ForumArticleAttachment();
+        forumArticleAttachment.setIntegral(integral==null ? 0 : integral);
+        forumArticleService.postArticle(userDto.getAdmin(),forumArticle,forumArticleAttachment,cover,attachment);
+
+        return getSuccessResponseVO(forumArticle.getArticleId());
     }
 
 

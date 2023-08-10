@@ -1,7 +1,7 @@
 package com.hk.entity.enums;
 
 public enum VerifyRegexEnum {
-    NO(".*","不校验"),
+    NO("","不校验"),
     IP("^((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$","ip地址"),
     POSITIVE_INTEGER("^[1-9]\\d*$","正整数"),
     NUMBER_LETTER_LINE("^[a-zA-Z0-9_]+$","由数字，字母，下划线组成的字符串"),

@@ -3,6 +3,7 @@ package com.hk.service;
 import java.util.List;
 import java.util.Date;
 
+import com.hk.entity.po.ForumArticleAttachment;
 import com.hk.exception.BusinessException;
 import com.hk.utils.DateUtils;
 import com.hk.entity.enums.DateTimePatternEnum;
@@ -11,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.hk.entity.po.ForumArticle;
 import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.query.ForumArticleQuery;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @Description:文章信息Service
@@ -67,4 +69,5 @@ public interface ForumArticleService {
 
 	ForumArticle readArticle(String articleId) throws BusinessException;
 
+    void postArticle(Boolean isAdmin, ForumArticle article, ForumArticleAttachment articleAttachment, MultipartFile cover, MultipartFile attachment) throws BusinessException;
 }

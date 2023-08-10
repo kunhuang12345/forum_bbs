@@ -104,10 +104,11 @@ public class OperationAspect {
         if (isEmpty && verifyParam.required()) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
-        if (isEmpty || (verifyParam.max() != -1 && verifyParam.max() < length || verifyParam.min() != -1 && verifyParam.min() > length)) {
+        if ((verifyParam.max() != -1 && verifyParam.max() < length || verifyParam.min() != -1 && verifyParam.min() > length)) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
-        if (isEmpty || StringTools.isEmpty(verifyParam.regex().getRegex()) || !VerifyUtils.verify(verifyParam.regex(),String.valueOf(value))) {
+        // 设置正则参数校验的同时参数不为空或者正则不匹配
+        if (!StringTools.isEmpty(verifyParam.regex().getRegex()) && (isEmpty || !VerifyUtils.verify(verifyParam.regex(),String.valueOf(value)))) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
     }
