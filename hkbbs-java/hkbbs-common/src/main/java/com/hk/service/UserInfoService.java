@@ -13,6 +13,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.hk.entity.po.UserInfo;
 import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.query.UserInfoQuery;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @Description:用户信息Service
@@ -104,4 +105,6 @@ public interface UserInfoService {
 	SessionWebUserDto login(String email,String password,String ip) throws BusinessException;
 
     void resetPwd(String email,String password, String emailCode) throws BusinessException;
+
+    void updateUserInfo(UserInfo userInfo, MultipartFile avatar) throws BusinessException;
 }

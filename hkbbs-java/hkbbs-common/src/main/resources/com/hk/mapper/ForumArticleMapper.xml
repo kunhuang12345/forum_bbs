@@ -200,6 +200,13 @@
 		 <if test="query.currentUserId!=null and query.currentUserId !=''">
 			 and (status=1 or (status=0 and user_id=#{query.currentUserId}))
 		 </if>
+		<!--评论-->
+		<if test="query.commentUserId!=null and query.commentUserId !=''">
+			and article_id in(select article_id from forum_comment where user_id=#{query.commentUserId})
+		</if>
+		<if test="query.likeUserId!=null and query.likeUserId !=''">
+			and article_id in(select object_id from like_record where user_id=#{query.likeUserId} and op_type=0)
+		</if>
 	</sql>
 
 

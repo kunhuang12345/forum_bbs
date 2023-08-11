@@ -17,10 +17,7 @@ import com.hk.exception.BusinessException;
 import com.hk.mapper.UserIntegralRecordMapper;
 import com.hk.mapper.UserMessageMapper;
 import com.hk.service.EmailCodeService;
-import com.hk.utils.JsonUtils;
-import com.hk.utils.OKHttpUtils;
-import com.hk.utils.StringTools;
-import com.hk.utils.SysCacheUtils;
+import com.hk.utils.*;
 import com.hk.service.UserInfoService;
 import com.hk.entity.po.UserInfo;
 import com.hk.entity.vo.PaginationResultVO;
@@ -32,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 
@@ -59,6 +57,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 	@Resource
 	private WebConfig webConfig;
+
+	@Resource
+	private FileUtils fileUtils;
 
 	/**
 	 * 根据条件查询列表
@@ -293,6 +294,20 @@ public class UserInfoServiceImpl implements UserInfoService {
 		UserInfo updateUserInfo = new UserInfo();
 		updateUserInfo.setPassword(StringTools.encodeMd5(password));
 		userInfoMapper.updateByEmail(updateUserInfo,email);
+    }
+
+	/**
+	 * 更新用户信息
+	 * @param userInfo 用户修改后信息
+	 * @param avatar 头像文件
+	 */
+	@Override
+    public void updateUserInfo(UserInfo userInfo, MultipartFile avatar) throws BusinessException {
+        userInfoMapper.updateByUserId(userInfo,userInfo.getUserId());
+		if (avatar != null) {
+			// 更改头像
+			fileUtils.uploadFile2Local(avatar,userInfo.getUserId(),FileUploadTypeEnum.AVATAR);
+		}
     }
 
     public String getIpAddress(String ip) {

@@ -64,8 +64,9 @@ public class FileUtils {
 
             if (uploadTypeEnum == FileUploadTypeEnum.AVATAR) {
                 //头像上传
-                targetFileFolder = new File(baseFolder + folder);
-                targetFile = new File(targetFileFolder.getPath() + "/" + fileName);
+                targetFileFolder = new File(baseFolder + Constants.FILE_FOLDER_AVATAR_NAME);
+                // 在头像的图片中，使用UserId称作为图片名称
+                targetFile = new File(targetFileFolder.getPath() + "/" + folder + Constants.AVATAR_SUFFIX);
                 localPath = folder + Constants.AVATAR_SUFFIX;
             }
 

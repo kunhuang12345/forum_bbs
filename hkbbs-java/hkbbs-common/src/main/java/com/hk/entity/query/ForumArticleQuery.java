@@ -10,8 +10,7 @@ import java.util.Date;
  * @date:2023/07/29
  */
 public class ForumArticleQuery extends BaseQuery {
-
-	/**
+    /**
 	 * 文章ID
 	 */
 	private String articleId;
@@ -152,6 +151,26 @@ public class ForumArticleQuery extends BaseQuery {
 	private Integer status;
 
 	private String currentUserId;
+
+	private String likeUserId;
+
+	public String getLikeUserId() {
+		return likeUserId;
+	}
+
+	public void setLikeUserId(String likeUserId) {
+		this.likeUserId = likeUserId;
+	}
+
+	public String getCommentUserId() {
+		return commentUserId;
+	}
+
+	public void setCommentUserId(String commentUserId) {
+		this.commentUserId = commentUserId;
+	}
+
+	private String commentUserId;
 
 	public String getCurrentUserId() {
 		return currentUserId;
