@@ -94,7 +94,7 @@ public class ForumArticleController extends ABaseController {
                                 (userInfoFromSession.getUserId().equals(forumArticle.getUserId()) || userInfoFromSession.getAdmin())))
         ) {
             ForumArticleDetailVO articleDetailVO = new ForumArticleDetailVO();
-            articleDetailVO.setForumArticle(CopyUtils.copy(forumArticle,ForumArticleVO.class));
+            articleDetailVO.setForumArticle(CopyUtils.copy(forumArticle, ForumArticleVO.class));
 
             // 有附件
             if (forumArticle.getAttachmentType().equals(Constants.ONE)) {
@@ -124,12 +124,12 @@ public class ForumArticleController extends ABaseController {
     @GlobalInterceptor(checkLogin = true)
     public ResponseVO doLike(HttpSession session, @VerifyParam(required = true) String articleId) throws BusinessException {
         SessionWebUserDto userInfoFromSession = getUserInfoFromSession(session);
-        likeRecordService.doLike(articleId,userInfoFromSession.getUserId(),userInfoFromSession.getNickName(),OperateRecordOpTypeEnum.ARTICLE_LIKE);
+        likeRecordService.doLike(articleId, userInfoFromSession.getUserId(), userInfoFromSession.getNickName(), OperateRecordOpTypeEnum.ARTICLE_LIKE);
         return getSuccessResponseVO("已点赞");
     }
 
     @RequestMapping("/getUserDownloadInfo")
-    @GlobalInterceptor(checkLogin = true,checkParams = true)
+    @GlobalInterceptor(checkLogin = true, checkParams = true)
     public ResponseVO getUserDownloadInfo(HttpSession session, @VerifyParam(required = true) String fileId) throws BusinessException {
         SessionWebUserDto userInfoFromSession = getUserInfoFromSession(session);
 
@@ -149,8 +149,8 @@ public class ForumArticleController extends ABaseController {
     }
 
     @RequestMapping("/attachmentDownload")
-    @GlobalInterceptor(checkParams = true,checkLogin = true)
-    public void attachmentDownload(HttpSession session, HttpServletRequest request , HttpServletResponse response,
+    @GlobalInterceptor(checkParams = true, checkLogin = true)
+    public void attachmentDownload(HttpSession session, HttpServletRequest request, HttpServletResponse response,
                                    @VerifyParam(required = true) String fileId) throws BusinessException {
         ForumArticleAttachment attachment = articleAttachmentService.downloadAttachment(fileId, getUserInfoFromSession(session));
         InputStream in = null;
@@ -168,29 +168,29 @@ public class ForumArticleController extends ABaseController {
             } else {
                 downloadFileName = new String(downloadFileName.getBytes(StandardCharsets.UTF_8), "ISO8859-1");
             }
-            response.setHeader("content-Disposition","attachment;filename=\"" + downloadFileName + "\"");
+            response.setHeader("content-Disposition", "attachment;filename=\"" + downloadFileName + "\"");
             byte[] byteData = new byte[1024];
             int len = 0;
             while ((len = in.read(byteData)) != -1) {
-                out.write(byteData,0,len);
+                out.write(byteData, 0, len);
             }
             out.flush();
         } catch (Exception e) {
-            logger.error("下载异常",e);
+            logger.error("下载异常", e);
             throw new BusinessException("下载失败");
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    logger.error("IO异常",e);
+                    logger.error("IO异常", e);
                 }
             }
             if (out != null) {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.error("IO异常",e);
+                    logger.error("IO异常", e);
                 }
             }
         }
@@ -215,7 +215,7 @@ public class ForumArticleController extends ABaseController {
                                   MultipartFile cover,
                                   MultipartFile attachment,
                                   Integer integral,
-                                  @VerifyParam(required = true,max = 150) String title,
+                                  @VerifyParam(required = true, max = 150) String title,
                                   @VerifyParam(required = true) Integer pBoardId,
                                   Integer boardId,
                                   @VerifyParam(max = 200) String summary,
@@ -245,8 +245,74 @@ public class ForumArticleController extends ABaseController {
 
         // 附件信息
         ForumArticleAttachment forumArticleAttachment = new ForumArticleAttachment();
-        forumArticleAttachment.setIntegral(integral==null ? 0 : integral);
-        forumArticleService.postArticle(userDto.getAdmin(),forumArticle,forumArticleAttachment,cover,attachment);
+        forumArticleAttachment.setIntegral(integral == null ? 0 : integral);
+        forumArticleService.postArticle(userDto.getAdmin(), forumArticle, forumArticleAttachment, cover, attachment);
+
+        return getSuccessResponseVO(forumArticle.getArticleId());
+    }
+
+
+    @RequestMapping("/articleDetail4Update")
+    @GlobalInterceptor(checkLogin = true, checkParams = true)
+    public ResponseVO articleDetail4Update(HttpSession session,
+                                           @VerifyParam(required = true) String articleId) throws BusinessException {
+        SessionWebUserDto userDto = getUserInfoFromSession(session);
+        ForumArticle forumArticle = forumArticleService.getForumArticleByArticleId(articleId);
+        if (forumArticle == null || !forumArticle.getUserId().equals(userDto.getUserId())) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+
+        // 返回对象VO
+        ForumArticleDetailVO detailVO = new ForumArticleDetailVO();
+        detailVO.setForumArticle(CopyUtils.copy(forumArticle, ForumArticleVO.class));
+        if (forumArticle.getAttachmentType().equals(Constants.ONE)) {
+            ForumArticleAttachmentQuery attachmentQuery = new ForumArticleAttachmentQuery();
+            attachmentQuery.setArticleId(articleId);
+            List<ForumArticleAttachment> attachmentList = articleAttachmentService.findListByParam(attachmentQuery);
+            if (!attachmentList.isEmpty()) {
+                detailVO.setAttachment(CopyUtils.copy(attachmentList.get(0), ForumArticleAttachmentVO.class));
+            }
+        }
+
+        return getSuccessResponseVO(detailVO);
+    }
+
+    @RequestMapping("/updateArticle")
+    @GlobalInterceptor(checkLogin = true, checkParams = true)
+    public ResponseVO updateArticle(HttpSession session,
+                                    MultipartFile cover,
+                                    MultipartFile attachment,
+                                    Integer integral,
+                                    @VerifyParam(required = true) String articleId,
+                                    @VerifyParam(required = true, max = 150) String title,
+                                    @VerifyParam(required = true) Integer pBoardId,
+                                    Integer boardId,
+                                    @VerifyParam(max = 200) String summary,
+                                    @VerifyParam(required = true) Integer editorType,
+                                    @VerifyParam(required = true) String content,
+                                    @VerifyParam(required = true) Integer attachmentType,
+                                    String markdownContent) throws BusinessException {
+
+        title = StringTools.escapeHtml(title);
+        SessionWebUserDto userDto = getUserInfoFromSession(session);
+        ForumArticle forumArticle = new ForumArticle();
+        forumArticle.setArticleId(articleId);
+        forumArticle.setPBoardId(pBoardId);
+        forumArticle.setBoardId(boardId);
+        forumArticle.setTitle(title);
+        forumArticle.setContent(content);
+        forumArticle.setMarkdownContent(markdownContent);
+        forumArticle.setEditorType(editorType);
+        forumArticle.setSummary(summary);
+        forumArticle.setUserIpAddress(userDto.getProvince());
+        forumArticle.setAttachmentType(attachmentType);
+        forumArticle.setUserId(userDto.getUserId());
+
+        // 附件信息
+        ForumArticleAttachment forumArticleAttachment = new ForumArticleAttachment();
+        forumArticleAttachment.setIntegral(integral == null ? 0 : integral);
+
+        forumArticleService.updateArticle(userDto.getAdmin(),forumArticle,forumArticleAttachment,cover,attachment);
 
         return getSuccessResponseVO(forumArticle.getArticleId());
     }

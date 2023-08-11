@@ -49,6 +49,7 @@ public class ForumArticleVO {
      * 内容
      */
     private String content;
+    private String markdownContent;
 
     /**
      * 摘要
@@ -88,6 +89,19 @@ public class ForumArticleVO {
      * 0:没有附件  1：有附件
      */
     private Integer attachmentType;
+
+    /**
+     * 0:富文本编辑器 1:markdown编辑器
+     */
+    private Integer editorType;
+
+    public Integer getEditorType() {
+        return editorType;
+    }
+
+    public void setEditorType(Integer editorType) {
+        this.editorType = editorType;
+    }
 
     public String getArticleId() {
         return articleId;
@@ -215,5 +229,13 @@ public class ForumArticleVO {
 
     public void setAttachmentType(Integer attachmentType) {
         this.attachmentType = attachmentType;
+    }
+
+    public String getMarkdownContent() {
+        return markdownContent;
+    }
+
+    public void setMarkdownContent(String markdownContent) {
+        this.markdownContent = markdownContent;
     }
 }

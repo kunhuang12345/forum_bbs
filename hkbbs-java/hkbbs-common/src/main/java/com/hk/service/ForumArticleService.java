@@ -21,53 +21,55 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface ForumArticleService {
 
-	/**
-	 * 根据条件查询列表
-	 */
-	List<ForumArticle> findListByParam(ForumArticleQuery param);
+    /**
+     * 根据条件查询列表
+     */
+    List<ForumArticle> findListByParam(ForumArticleQuery param);
 
-	/**
-	 * 根据条件查询数量
-	 */
-	Integer findCountByParam(ForumArticleQuery param);
+    /**
+     * 根据条件查询数量
+     */
+    Integer findCountByParam(ForumArticleQuery param);
 
-	/**
-	 * 分页查询
-	 */
-	PaginationResultVO<ForumArticle> findListByPage(ForumArticleQuery param);
+    /**
+     * 分页查询
+     */
+    PaginationResultVO<ForumArticle> findListByPage(ForumArticleQuery param);
 
-	/**
-	 * 新增
-	 */
-	Integer add(ForumArticle bean);
+    /**
+     * 新增
+     */
+    Integer add(ForumArticle bean);
 
-	/**
-	 * 批量新增
-	 */
+    /**
+     * 批量新增
+     */
 
-	Integer addBatch(List<ForumArticle> beanList);
+    Integer addBatch(List<ForumArticle> beanList);
 
-	/**
-	 * 批量新增或修改
-	 */
-	Integer addOrUpdateBatch(List<ForumArticle> beanList);
+    /**
+     * 批量新增或修改
+     */
+    Integer addOrUpdateBatch(List<ForumArticle> beanList);
 
-	/**
-	 * 根据ArticleId查询
-	 */
-	ForumArticle getForumArticleByArticleId(String articleId);
+    /**
+     * 根据ArticleId查询
+     */
+    ForumArticle getForumArticleByArticleId(String articleId);
 
-	/**
-	 * 根据ArticleId更新
-	 */
-	Integer updateForumArticleByArticleId(ForumArticle forumArticle, String articleId);
+    /**
+     * 根据ArticleId更新
+     */
+    Integer updateForumArticleByArticleId(ForumArticle forumArticle, String articleId);
 
-	/**
-	 * 根据ArticleId删除
-	 */
-	Integer deleteForumArticleByArticleId(String articleId);
+    /**
+     * 根据ArticleId删除
+     */
+    Integer deleteForumArticleByArticleId(String articleId);
 
-	ForumArticle readArticle(String articleId) throws BusinessException;
+    ForumArticle readArticle(String articleId) throws BusinessException;
 
     void postArticle(Boolean isAdmin, ForumArticle article, ForumArticleAttachment articleAttachment, MultipartFile cover, MultipartFile attachment) throws BusinessException;
+
+    void updateArticle(Boolean isAdmin, ForumArticle article, ForumArticleAttachment articleAttachment, MultipartFile cover, MultipartFile attachment) throws BusinessException;
 }

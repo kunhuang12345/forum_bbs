@@ -2,7 +2,7 @@ package com.hk.entity.enums;
 
 public enum ArticleAttachmentTypeEnum {
     NO_ATTACHMENT(0,"没有附件"),
-    HAVE_ATTACHMENT(1,"由附件");
+    HAVE_ATTACHMENT(1,"有附件");
     private Integer type;
     private String desc;
 

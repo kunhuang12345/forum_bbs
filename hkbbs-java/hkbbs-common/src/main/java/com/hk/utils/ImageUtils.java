@@ -99,6 +99,9 @@ public class ImageUtils {
         return imageFileName;
     }
 
+    /**
+     * 拿到所有图片的url
+     */
     private List<String> getImageList(String html) {
         List<String> imageList = new ArrayList<>();
         String regEx_img = "(<img.*src\\s*=\\s*(.*?)[^>]*?>)";

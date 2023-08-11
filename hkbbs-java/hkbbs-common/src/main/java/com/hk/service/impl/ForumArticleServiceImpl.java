@@ -1,8 +1,10 @@
 package com.hk.service.impl;
 
+import java.io.File;
 import java.util.List;
 import java.util.Date;
 
+import com.hk.entity.config.AppConfig;
 import com.hk.entity.constants.Constants;
 import com.hk.entity.dto.FileUploadDto;
 import com.hk.entity.enums.*;
@@ -54,6 +56,9 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 
     @Resource
     private ImageUtils imageUtils;
+
+    @Resource
+    private AppConfig appConfig;
 
     /**
      * 根据条件查询列表
@@ -144,7 +149,7 @@ public class ForumArticleServiceImpl implements ForumArticleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void postArticle(Boolean isAdmin, ForumArticle article, ForumArticleAttachment articleAttachment, MultipartFile cover, MultipartFile attachment) throws BusinessException {
-        resetBoardInfo(isAdmin,article);
+        resetBoardInfo(isAdmin, article);
         Date curDate = new Date();
         String articleId = StringTools.getRandomString(Constants.LENGTH_15);
         article.setArticleId(articleId);
@@ -153,13 +158,13 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 
         // 上传封面
         if (cover != null) {
-            FileUploadDto fileUploadDto = fileUtils.uploadFile2Local(cover,Constants.FILE_FOLDER_IMAGE,FileUploadTypeEnum.ARTICLE_COVER);
+            FileUploadDto fileUploadDto = fileUtils.uploadFile2Local(cover, Constants.FILE_FOLDER_IMAGE, FileUploadTypeEnum.ARTICLE_COVER);
             article.setCover(fileUploadDto.getLocalPath());
         }
 
         // 上传附件
         if (attachment != null) {
-            uploadAttachment(article,articleAttachment,attachment,false);
+            uploadAttachment(article, articleAttachment, attachment, false);
             article.setAttachmentType(ArticleAttachmentTypeEnum.HAVE_ATTACHMENT.getType());
         } else {
             article.setAttachmentType(ArticleAttachmentTypeEnum.NO_ATTACHMENT.getType());
@@ -170,7 +175,7 @@ public class ForumArticleServiceImpl implements ForumArticleService {
             article.setStatus(ArticleStatusEnum.AUDIT.getStatus());
         } else {
             Boolean postAudit = SysCacheUtils.getSysSetting().getAuditSetting().getPostAudit();
-            article.setStatus(postAudit? ArticleStatusEnum.NO_AUDIT.getStatus() : ArticleStatusEnum.AUDIT.getStatus());
+            article.setStatus(postAudit ? ArticleStatusEnum.NO_AUDIT.getStatus() : ArticleStatusEnum.AUDIT.getStatus());
         }
 
         // 替换图片
@@ -178,11 +183,11 @@ public class ForumArticleServiceImpl implements ForumArticleService {
         if (!StringTools.isEmpty(content)) {
             String month = imageUtils.resetImageHtml(content);
             // 更新文本中图片的url
-            content = content.replace(Constants.FILE_FOLDER_TEMP,month);
+            content = content.replace(Constants.FILE_FOLDER_TEMP, month);
             article.setContent(content);
             String markdownContent = article.getMarkdownContent();
             if (markdownContent != null) {
-                markdownContent = markdownContent.replace(Constants.FILE_FOLDER_TEMP,month);
+                markdownContent = markdownContent.replace(Constants.FILE_FOLDER_TEMP, month);
                 article.setMarkdownContent(markdownContent);
             }
         }
@@ -194,6 +199,80 @@ public class ForumArticleServiceImpl implements ForumArticleService {
         if (postIntegral > 0 && ArticleStatusEnum.AUDIT.getStatus().equals(article.getStatus())) {
             userInfoService.updateUserIntegral(article.getUserId(), UserIntegralOperateTypeEnum.POST_ARTICLE, UserIntegralChangeTypeEnum.ADD.getChangeType(), postIntegral);
         }
+    }
+
+    /**
+     * 更新文章信息
+     */
+    @Override
+    public void updateArticle(Boolean isAdmin, ForumArticle article, ForumArticleAttachment articleAttachment, MultipartFile cover, MultipartFile attachment) throws BusinessException {
+        // 是否为本人操作
+        ForumArticle dbInfo = forumArticleMapper.selectByArticleId(article.getArticleId());
+        if (!isAdmin && !dbInfo.getUserId().equals(article.getUserId())) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        article.setLastUpdateTime(new Date());
+        resetBoardInfo(isAdmin, article);
+        if (cover != null) {
+            FileUploadDto fileUploadDto = fileUtils.uploadFile2Local(cover, Constants.FILE_FOLDER_IMAGE, FileUploadTypeEnum.ARTICLE_COVER);
+            article.setCover(fileUploadDto.getLocalPath());
+        }
+
+        // 上传附件
+        if (attachment != null) {
+            uploadAttachment(article, articleAttachment, attachment, true);
+            article.setAttachmentType(ArticleAttachmentTypeEnum.HAVE_ATTACHMENT.getType());
+        }
+
+        ForumArticleAttachment dbAttachment = null;
+        ForumArticleAttachmentQuery attachmentQuery = new ForumArticleAttachmentQuery();
+        attachmentQuery.setArticleId(article.getArticleId());
+        List<ForumArticleAttachment> articleAttachmentList = forumArticleAttachmentMapper.selectList(attachmentQuery);
+        if (!articleAttachmentList.isEmpty()) {
+            dbAttachment = articleAttachmentList.get(0);
+        }
+
+        // 更改积分信息
+        if (dbAttachment != null) {
+            // 如果getAttachmentType()==0,则为没有附件
+            if (article.getAttachmentType().equals(Constants.ZERO)) {
+                new File(appConfig.getProjectFolder() + Constants.FILE_FOLDER_FILE + Constants.FILE_FOLDER_ATTACHMENT + dbAttachment.getFilePath()).delete();
+                forumArticleAttachmentMapper.deleteByFileId(dbAttachment.getFileId());
+            } else {
+                // 如果更改前后积分相等
+                boolean equal = !dbAttachment.getIntegral().equals(articleAttachment.getIntegral());
+                if (equal) {
+                    ForumArticleAttachment integralUpdate = new ForumArticleAttachment();
+                    integralUpdate.setIntegral(articleAttachment.getIntegral());
+                    forumArticleAttachmentMapper.updateByFileId(integralUpdate, dbAttachment.getFileId());
+                }
+            }
+        }
+
+        // 文章是否需要审核
+        if (isAdmin) {
+            article.setStatus(ArticleStatusEnum.AUDIT.getStatus());
+        } else {
+            Boolean postAudit = SysCacheUtils.getSysSetting().getAuditSetting().getPostAudit();
+            article.setStatus(postAudit ? ArticleStatusEnum.NO_AUDIT.getStatus() : ArticleStatusEnum.AUDIT.getStatus());
+        }
+
+        // 替换图片
+        String content = article.getContent();
+        if (!StringTools.isEmpty(content)) {
+            String month = imageUtils.resetImageHtml(content);
+            // 更新文本中图片的url
+            content = content.replace(Constants.FILE_FOLDER_TEMP, month);
+            article.setContent(content);
+            String markdownContent = article.getMarkdownContent();
+            if (markdownContent != null) {
+                markdownContent = markdownContent.replace(Constants.FILE_FOLDER_TEMP, month);
+                article.setMarkdownContent(markdownContent);
+            }
+        }
+
+        this.forumArticleMapper.updateByArticleId(article,article.getArticleId());
+
     }
 
     /**
@@ -222,27 +301,46 @@ public class ForumArticleServiceImpl implements ForumArticleService {
     private void uploadAttachment(ForumArticle article, ForumArticleAttachment articleAttachment, MultipartFile file, Boolean isUpdate) throws BusinessException {
         // 获取系统最大附件限制
         Integer allowSizeMb = SysCacheUtils.getSysSetting().getPostSetting().getAttachmentSize();
-        long allowSize = (long)allowSizeMb*Constants.FILE_SIZE_1M;
+        long allowSize = (long) allowSizeMb * Constants.FILE_SIZE_1M;
 
         if (file.getSize() > allowSize) {
             throw new BusinessException("附件最大上传大小:" + allowSizeMb + "MB");
         }
 
         // 如果是用户对文件进行修改
+        ForumArticleAttachment dbInfo = null;
         if (isUpdate) {
+            ForumArticleAttachmentQuery attachmentQuery = new ForumArticleAttachmentQuery();
+            attachmentQuery.setArticleId(article.getArticleId());
+            List<ForumArticleAttachment> articleAttachmentList = forumArticleAttachmentMapper.selectList(attachmentQuery);
+            if (!articleAttachmentList.isEmpty()) {
+                dbInfo = articleAttachmentList.get(0);
+                // 删除准备更改的原文件
+                new File(appConfig.getProjectFolder() + Constants.FILE_FOLDER_FILE + Constants.FILE_FOLDER_ATTACHMENT + dbInfo.getFilePath()).delete();
+            }
+        }
+
+        // 上传文件到本地
+        FileUploadDto fileUploadDto = fileUtils.uploadFile2Local(file, Constants.FILE_FOLDER_ATTACHMENT, FileUploadTypeEnum.ARTICLE_ATTACHMENT);
+        if (dbInfo == null) {
+            // 新增的情况
+            articleAttachment.setFileId(StringTools.getRandomNumber(Constants.LENGTH_15));
+            articleAttachment.setArticleId(article.getArticleId());
+            articleAttachment.setFileName(fileUploadDto.getOriginalFileName());
+            articleAttachment.setFilePath(fileUploadDto.getLocalPath());
+            articleAttachment.setFileSize(file.getSize());
+            articleAttachment.setDownloadCount(Constants.ZERO);
+            articleAttachment.setFileType(AttachmentFileTypeEnum.ZIP.getType());
+            articleAttachment.setUserId(article.getUserId());
+            forumArticleAttachmentMapper.insert(articleAttachment);
+        } else {
+            // 更改的情况
+            ForumArticleAttachment updateInfo = new ForumArticleAttachment();
+            updateInfo.setFileName(fileUploadDto.getOriginalFileName());
+            fileUploadDto.setLocalPath(fileUploadDto.getLocalPath());
+            forumArticleAttachmentMapper.updateByFileId(updateInfo, dbInfo.getFileId());
 
         }
-        FileUploadDto fileUploadDto = fileUtils.uploadFile2Local(file, Constants.FILE_FOLDER_ATTACHMENT,FileUploadTypeEnum.ARTICLE_ATTACHMENT);
-
-        articleAttachment.setFileId(StringTools.getRandomNumber(Constants.LENGTH_15));
-        articleAttachment.setArticleId(article.getArticleId());
-        articleAttachment.setFileName(fileUploadDto.getOriginalFileName());
-        articleAttachment.setFilePath(fileUploadDto.getLocalPath());
-        articleAttachment.setFileSize(file.getSize());
-        articleAttachment.setDownloadCount(Constants.ZERO);
-        articleAttachment.setFileType(AttachmentFileTypeEnum.ZIP.getType());
-        articleAttachment.setUserId(article.getUserId());
-        forumArticleAttachmentMapper.insert(articleAttachment);
     }
 
 }
