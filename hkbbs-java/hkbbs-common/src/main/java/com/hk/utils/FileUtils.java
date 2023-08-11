@@ -27,6 +27,9 @@ public class FileUtils {
     @Resource
     private AppConfig appConfig;
 
+    @Resource
+    private ImageUtils imageUtils;
+
     public FileUploadDto uploadFile2Local(MultipartFile file, String folder, FileUploadTypeEnum uploadTypeEnum) throws BusinessException {
         try {
             FileUploadDto fileUploadDto = new FileUploadDto();
@@ -76,12 +79,12 @@ public class FileUtils {
             if (uploadTypeEnum == FileUploadTypeEnum.COMMENT_IMAGE) {
                 String thumbnailName = targetFile.getName().replace(".","_.");
                 File thumbnail = new File(targetFile.getParent() + "/" + thumbnailName);
-                Boolean createThumbnail = ImageUtils.createThumbnail(targetFile, Constants.LENGTH_200, Constants.LENGTH_200, thumbnail);
+                Boolean createThumbnail = imageUtils.createThumbnail(targetFile, Constants.LENGTH_200, Constants.LENGTH_200, thumbnail);
                 if (!createThumbnail) {
                     org.apache.commons.io.FileUtils.copyFile(targetFile,thumbnail);
                 }
             } else if (uploadTypeEnum == FileUploadTypeEnum.AVATAR || uploadTypeEnum == FileUploadTypeEnum.ARTICLE_COVER) {
-                ImageUtils.createThumbnail(targetFile,Constants.LENGTH_200,Constants.LENGTH_200,targetFile);
+                imageUtils.createThumbnail(targetFile,Constants.LENGTH_200,Constants.LENGTH_200,targetFile);
             }
 
             fileUploadDto.setLocalPath(localPath);

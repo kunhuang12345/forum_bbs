@@ -14,6 +14,7 @@ import com.hk.mapper.ForumArticleAttachmentMapper;
 import com.hk.service.ForumBoardService;
 import com.hk.service.UserInfoService;
 import com.hk.utils.FileUtils;
+import com.hk.utils.ImageUtils;
 import com.hk.utils.StringTools;
 import com.hk.utils.SysCacheUtils;
 import com.hk.service.ForumArticleService;
@@ -50,6 +51,9 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 
     @Resource
     private ForumArticleAttachmentMapper<ForumArticleAttachment, ForumArticleAttachmentQuery> forumArticleAttachmentMapper;
+
+    @Resource
+    private ImageUtils imageUtils;
 
     /**
      * 根据条件查询列表
@@ -172,7 +176,15 @@ public class ForumArticleServiceImpl implements ForumArticleService {
         // 替换图片
         String content = article.getContent();
         if (!StringTools.isEmpty(content)) {
-//            String month =
+            String month = imageUtils.resetImageHtml(content);
+            // 更新文本中图片的url
+            content = content.replace(Constants.FILE_FOLDER_TEMP,month);
+            article.setContent(content);
+            String markdownContent = article.getMarkdownContent();
+            if (markdownContent != null) {
+                markdownContent = markdownContent.replace(Constants.FILE_FOLDER_TEMP,month);
+                article.setMarkdownContent(markdownContent);
+            }
         }
 
         forumArticleMapper.insert(article);
