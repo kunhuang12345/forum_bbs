@@ -5,6 +5,7 @@ import com.hk.controller.base.ABaseController;
 import com.hk.entity.config.WebConfig;
 import com.hk.entity.constants.Constants;
 import com.hk.entity.enums.ResponseCodeEnum;
+import com.hk.entity.enums.UserOperatefrequencyTypeEnum;
 import com.hk.entity.vo.ResponseVO;
 import com.hk.exception.BusinessException;
 import com.hk.utils.StringTools;
@@ -38,29 +39,31 @@ public class FileController extends ABaseController {
 
     /**
      * 上传文件
+     *
      * @param file
      * @return
      * @throws BusinessException
      */
     @RequestMapping("/upLoadImage")
-    @GlobalInterceptor(checkLogin = true)
+    @GlobalInterceptor(checkLogin = true, frequencyType = UserOperatefrequencyTypeEnum.IMAGE_UPLOAD)
     public ResponseVO upLoadImage(MultipartFile file) throws BusinessException {
         if (file == null) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
         String fileName = file.getOriginalFilename();
         String fileExtName = StringTools.getFileSuffix(fileName);
-        if (!ArrayUtils.contains(Constants.IMAGE_SUFFIX,fileExtName)) {
+        if (!ArrayUtils.contains(Constants.IMAGE_SUFFIX, fileExtName)) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
         String path = copyFile(file);
-        Map<String,String> fileMap = new HashMap<>();
-        fileMap.put("fileName",path);
+        Map<String, String> fileMap = new HashMap<>();
+        fileMap.put("fileName", path);
         return getSuccessResponseVO(fileMap);
     }
 
     /**
      * copy文件到本地
+     *
      * @param file
      * @return
      * @throws BusinessException
@@ -80,7 +83,7 @@ public class FileController extends ABaseController {
             file.transferTo(upLoadFile);
             return Constants.FILE_FOLDER_TEMP + "/" + fileRealName;
         } catch (Exception e) {
-            logger.error("上传文件失败",e);
+            logger.error("上传文件失败", e);
             throw new BusinessException("上传文件失败");
         }
     }
@@ -90,12 +93,12 @@ public class FileController extends ABaseController {
     public void getImage(HttpServletResponse response,
                          @PathVariable("imageFolder") String imageFolder,
                          @PathVariable("imageName") String imageName) {
-        readImage(response,imageFolder,imageName);
+        readImage(response, imageFolder, imageName);
     }
 
     @RequestMapping("/getAvatar/{userId}")
     public void getAvatar(HttpServletResponse response,
-                         @PathVariable("userId") String userId) {
+                          @PathVariable("userId") String userId) {
         String avatarFolderName = Constants.FILE_FOLDER_FILE + Constants.FILE_FOLDER_AVATAR_NAME;
         String avatarPath = webConfig.getProjectFolder() + avatarFolderName + userId + Constants.AVATAR_SUFFIX;
 
@@ -109,7 +112,7 @@ public class FileController extends ABaseController {
         if (!file.exists()) {
             imageName = Constants.AVATAR_DEFAULT;
         }
-        readImage(response,Constants.FILE_FOLDER_AVATAR_NAME,imageName);
+        readImage(response, Constants.FILE_FOLDER_AVATAR_NAME, imageName);
     }
 
     private void readImage(HttpServletResponse response, String imageFolder, String imageName) {
@@ -129,11 +132,11 @@ public class FileController extends ABaseController {
             if (!file.exists()) {
                 return;
             }
-            imageSuffix = imageSuffix.replace(".","");
+            imageSuffix = imageSuffix.replace(".", "");
             if (!Constants.FILE_FOLDER_AVATAR_NAME.equals(imageFolder)) {
 
                 // 设置缓存时间
-                response.setHeader("Cache-Control","max-age-2592000");
+                response.setHeader("Cache-Control", "max-age-2592000");
             }
             response.setContentType("image/" + imageSuffix);
             in = new FileInputStream(file);
@@ -146,8 +149,8 @@ public class FileController extends ABaseController {
             sos.write(baos.toByteArray());
             sos.flush();
             baos.flush();
-        }catch (Exception e) {
-            logger.error("读取图片异常",e);
+        } catch (Exception e) {
+            logger.error("读取图片异常", e);
         } finally {
             if (baos != null) {
                 try {

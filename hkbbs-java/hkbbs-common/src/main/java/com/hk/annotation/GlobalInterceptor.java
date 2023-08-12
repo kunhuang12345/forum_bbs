@@ -1,5 +1,7 @@
 package com.hk.annotation;
 
+import com.hk.entity.enums.UserOperatefrequencyTypeEnum;
+
 import java.lang.annotation.*;
 
 @Target({ElementType.METHOD,ElementType.TYPE}) // 目标对象，可以添加方法、属性、类等元素
@@ -20,4 +22,5 @@ public @interface GlobalInterceptor {
     /**
      * 校验频次
      */
+    UserOperatefrequencyTypeEnum frequencyType() default UserOperatefrequencyTypeEnum.NO_CHECK;
 }

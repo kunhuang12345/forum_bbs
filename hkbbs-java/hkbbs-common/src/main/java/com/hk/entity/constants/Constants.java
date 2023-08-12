@@ -27,4 +27,6 @@ public class Constants {
     public static final Integer LENGTH_190 = 190;
     public static final Integer FILE_SIZE_1M = 1024*1024;
     public static final String READ_IMAGE_PATH = "/api/file/getImage/";
+    public static final String SESSION_KEY_FREQUENCY = "session_key_frequency";
+    public static final String STATUS_SUCCESS = "success";
 }

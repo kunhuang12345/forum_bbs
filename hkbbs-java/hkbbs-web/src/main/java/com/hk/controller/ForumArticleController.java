@@ -121,7 +121,7 @@ public class ForumArticleController extends ABaseController {
     }
 
     @RequestMapping("/doLike")
-    @GlobalInterceptor(checkLogin = true)
+    @GlobalInterceptor(checkLogin = true, frequencyType = UserOperatefrequencyTypeEnum.DO_LIKE)
     public ResponseVO doLike(HttpSession session, @VerifyParam(required = true) String articleId) throws BusinessException {
         SessionWebUserDto userInfoFromSession = getUserInfoFromSession(session);
         likeRecordService.doLike(articleId, userInfoFromSession.getUserId(), userInfoFromSession.getNickName(), OperateRecordOpTypeEnum.ARTICLE_LIKE);
@@ -210,7 +210,7 @@ public class ForumArticleController extends ABaseController {
     }
 
     @RequestMapping("/postArticle")
-    @GlobalInterceptor(checkLogin = true, checkParams = true)
+    @GlobalInterceptor(checkLogin = true, checkParams = true, frequencyType = UserOperatefrequencyTypeEnum.POST_ARTICLE)
     public ResponseVO postArticle(HttpSession session,
                                   MultipartFile cover,
                                   MultipartFile attachment,
@@ -312,7 +312,7 @@ public class ForumArticleController extends ABaseController {
         ForumArticleAttachment forumArticleAttachment = new ForumArticleAttachment();
         forumArticleAttachment.setIntegral(integral == null ? 0 : integral);
 
-        forumArticleService.updateArticle(userDto.getAdmin(),forumArticle,forumArticleAttachment,cover,attachment);
+        forumArticleService.updateArticle(userDto.getAdmin(), forumArticle, forumArticleAttachment, cover, attachment);
 
         return getSuccessResponseVO(forumArticle.getArticleId());
     }

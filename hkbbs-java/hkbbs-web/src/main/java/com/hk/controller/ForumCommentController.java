@@ -39,9 +39,9 @@ public class ForumCommentController extends ABaseController {
     @RequestMapping("/loadComment")
     @GlobalInterceptor(checkParams = true)
     public ResponseVO loadComment(HttpSession session,
-                                   @VerifyParam(required = true) String articleId,
-                                   Integer pageNo,
-                                   Integer orderType) throws BusinessException {
+                                  @VerifyParam(required = true) String articleId,
+                                  Integer pageNo,
+                                  Integer orderType) throws BusinessException {
         final String ORDER_TYPE0 = "good_count desc,comment_id asc";
         final String ORDER_TYPE1 = "comment_id desc";
         if (!SysCacheUtils.getSysSetting().getCommentSetting().getCommentOpen()) {
@@ -74,13 +74,13 @@ public class ForumCommentController extends ABaseController {
                              @VerifyParam(required = true) Integer commentId) throws BusinessException {
         SessionWebUserDto userDto = getUserInfoFromSession(session);
         String objectId = String.valueOf(commentId);
-        likeRecordService.doLike(objectId,userDto.getUserId(),userDto.getNickName(), OperateRecordOpTypeEnum.COMMENT_LIKE);
+        likeRecordService.doLike(objectId, userDto.getUserId(), userDto.getNickName(), OperateRecordOpTypeEnum.COMMENT_LIKE);
 
-        LikeRecord likeRecord = likeRecordService.getLikeRecordByObjectIdAndUserIdAndOpType(objectId,userDto.getUserId(),OperateRecordOpTypeEnum.COMMENT_LIKE.getType());
+        LikeRecord likeRecord = likeRecordService.getLikeRecordByObjectIdAndUserIdAndOpType(objectId, userDto.getUserId(), OperateRecordOpTypeEnum.COMMENT_LIKE.getType());
 
         ForumComment forumComment = forumCommentService.getForumCommentByCommentId(commentId);
 
-        forumComment.setLikeType(likeRecord == null? Constants.ZERO : Constants.ONE);
+        forumComment.setLikeType(likeRecord == null ? Constants.ZERO : Constants.ONE);
 
         return getSuccessResponseVO(forumComment);
     }
@@ -90,19 +90,19 @@ public class ForumCommentController extends ABaseController {
     public ResponseVO changeTopType(HttpSession session,
                                     @VerifyParam(required = true) Integer commentId,
                                     @VerifyParam(required = true) Integer topType) throws BusinessException {
-        forumCommentService.changeTopType(getUserInfoFromSession(session).getUserId(), commentId,topType);
+        forumCommentService.changeTopType(getUserInfoFromSession(session).getUserId(), commentId, topType);
         return getSuccessResponseVO(null);
     }
 
     @RequestMapping("/postComment")
-    @GlobalInterceptor(checkParams = true, checkLogin = true)
+    @GlobalInterceptor(checkParams = true, checkLogin = true, frequencyType = UserOperatefrequencyTypeEnum.POST_COMMENT)
     public ResponseVO postComment(HttpSession session,
                                   @VerifyParam(required = true) String articleId,
                                   @VerifyParam(required = true) Integer pComment,
-                                  @VerifyParam(min = 5,max = 800) String content,
+                                  @VerifyParam(min = 5, max = 800) String content,
                                   MultipartFile image,
                                   String replyUserId
-                                  ) throws BusinessException {
+    ) throws BusinessException {
         if (!SysCacheUtils.getSysSetting().getCommentSetting().getCommentOpen()) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
@@ -124,7 +124,7 @@ public class ForumCommentController extends ABaseController {
         comment.setContent(content);
         comment.setReplyUserId(replyUserId);
         comment.setTopType(CommentTopTypeEnum.NO_TOP.getType());
-        forumCommentService.postComment(comment,image);
+        forumCommentService.postComment(comment, image);
         if (pComment != 0) {
             ForumCommentQuery forumCommentQuery = new ForumCommentQuery();
             forumCommentQuery.setArticleId(articleId);
