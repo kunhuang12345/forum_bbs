@@ -2,6 +2,9 @@ package com.hk.mapper;
 
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @Description:用户消息Mapper
  * @author:AUTHOR
@@ -39,5 +42,8 @@ public interface UserMessageMapper<T, P> extends BaseMapper<T, P> {
 	 */
 	Integer deleteByArticleIdAndCommentIdAndSendUserIdAndMessageType(@Param("article_id") String articleId, @Param("comment_id") Integer commentId, @Param("send_user_id") String sendUserId, @Param("message_type") Integer messageType);
 
+	List<Map<String,Object>> selectUserMessageCount(@Param("userId") String userId);
+
+	void updateMessageStatusBatch(@Param("receivedUserId") String receivedUserId, @Param("messageType") Integer messageType, @Param("status") Integer status);
 
 }

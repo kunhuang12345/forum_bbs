@@ -5,24 +5,25 @@ import com.hk.annotation.VerifyParam;
 import com.hk.controller.base.ABaseController;
 import com.hk.entity.constants.Constants;
 import com.hk.entity.dto.SessionWebUserDto;
+import com.hk.entity.dto.UserMessageDto;
 import com.hk.entity.enums.ArticleStatusEnum;
+import com.hk.entity.enums.MessageTypeEnum;
 import com.hk.entity.enums.ResponseCodeEnum;
 import com.hk.entity.enums.UserStatusEnum;
 import com.hk.entity.po.ForumArticle;
 import com.hk.entity.po.UserInfo;
 import com.hk.entity.po.UserIntegralRecord;
+import com.hk.entity.po.UserMessage;
 import com.hk.entity.query.ForumArticleQuery;
 import com.hk.entity.query.LikeRecordQuery;
 import com.hk.entity.query.UserIntegralRecordQuery;
+import com.hk.entity.query.UserMessageQuery;
 import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.vo.ResponseVO;
 import com.hk.entity.vo.web.ForumArticleVO;
 import com.hk.entity.vo.web.UserInfoVO;
 import com.hk.exception.BusinessException;
-import com.hk.service.ForumArticleService;
-import com.hk.service.LikeRecordService;
-import com.hk.service.UserInfoService;
-import com.hk.service.UserIntegralRecordService;
+import com.hk.service.*;
 import com.hk.utils.CopyUtils;
 import org.apache.tomcat.util.bcel.classfile.Constant;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,6 +48,9 @@ public class UserCenterController extends ABaseController {
 
     @Resource
     private UserIntegralRecordService userIntegralRecordService;
+
+    @Resource
+    private UserMessageService userMessageService;
 
     /**
      * 获取用户信息
@@ -144,6 +148,40 @@ public class UserCenterController extends ABaseController {
         recordQuery.setCreateTimeEnd(createTimeEnd);
         recordQuery.setOrderBy("record_id desc");
         PaginationResultVO<UserIntegralRecord> listByPage = userIntegralRecordService.findListByPage(recordQuery);
+        return getSuccessResponseVO(listByPage);
+    }
+
+    // 获取消息数
+    @RequestMapping("/getMessageCount")
+    @GlobalInterceptor(checkParams = true, checkLogin = true) // 只能本人访问
+    public ResponseVO getMessageCount(HttpSession session) {
+        SessionWebUserDto userDto = getUserInfoFromSession(session);
+        UserMessageDto userMessageCount = userMessageService.getUserMessageCount(userDto.getUserId());
+        return getSuccessResponseVO(userMessageCount);
+    }
+
+    @RequestMapping("/loadMessageList")
+    @GlobalInterceptor(checkParams = true, checkLogin = true) // 只能本人访问
+    public ResponseVO loadMessageList(HttpSession session,@VerifyParam String code, Integer pageNo) throws BusinessException {
+        MessageTypeEnum messageType = MessageTypeEnum.getByCode(code);
+        if (messageType == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+
+        SessionWebUserDto userDto = getUserInfoFromSession(session);
+        UserMessageQuery query = new UserMessageQuery();
+        query.setPageNo(pageNo);
+        query.setReceivedUserId(userDto.getUserId());
+        query.setMessageType(messageType.getType());
+        query.setOrderBy("message_id desc");
+
+        PaginationResultVO<UserMessage> listByPage = userMessageService.findListByPage(query);
+
+        boolean equal = pageNo == null || pageNo == 1 || pageNo == 0;
+        if (equal) {
+            userMessageService.readMessageByType(userDto.getUserId(),messageType.getType());
+        }
+
         return getSuccessResponseVO(listByPage);
     }
 }

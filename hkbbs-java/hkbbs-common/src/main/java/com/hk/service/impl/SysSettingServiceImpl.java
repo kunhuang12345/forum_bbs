@@ -32,107 +32,107 @@ import javax.annotation.Resource;
 @Service("sysSettingService")
 public class SysSettingServiceImpl implements SysSettingService {
 
-	private static final Logger logger = LoggerFactory.getLogger(SysSettingServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(SysSettingServiceImpl.class);
 
-	@Resource
-	private SysSettingMapper<SysSetting, SysSettingQuery> sysSettingMapper;
+    @Resource
+    private SysSettingMapper<SysSetting, SysSettingQuery> sysSettingMapper;
 
-	/**
-	 * 根据条件查询列表
-	 */
-	public List<SysSetting> findListByParam(SysSettingQuery query) {
-		return this.sysSettingMapper.selectList(query);
-	}
+    /**
+     * 根据条件查询列表
+     */
+    public List<SysSetting> findListByParam(SysSettingQuery query) {
+        return this.sysSettingMapper.selectList(query);
+    }
 
-	/**
-	 * 根据条件查询数量
-	 */
-	public Integer findCountByParam(SysSettingQuery query) {
-		return this.sysSettingMapper.selectCount(query);
-	}
+    /**
+     * 根据条件查询数量
+     */
+    public Integer findCountByParam(SysSettingQuery query) {
+        return this.sysSettingMapper.selectCount(query);
+    }
 
-	/**
-	 * 分页查询
-	 */
-	public PaginationResultVO<SysSetting> findListByPage(SysSettingQuery query) {
-		Integer count = this.findCountByParam(query);
-		Integer pageSize = query.getPageSize() == null ? PageSize.SIZE15.getSize() : query.getPageSize();
-		SimplePage page = new SimplePage(query.getPageNo(), count, pageSize);
-		query.setSimplePage(page);
-		List<SysSetting> list = this.findListByParam(query);
-		PaginationResultVO<SysSetting> result = new PaginationResultVO<>(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
-		return result;
-	}
+    /**
+     * 分页查询
+     */
+    public PaginationResultVO<SysSetting> findListByPage(SysSettingQuery query) {
+        Integer count = this.findCountByParam(query);
+        Integer pageSize = query.getPageSize() == null ? PageSize.SIZE15.getSize() : query.getPageSize();
+        SimplePage page = new SimplePage(query.getPageNo(), count, pageSize);
+        query.setSimplePage(page);
+        List<SysSetting> list = this.findListByParam(query);
+        PaginationResultVO<SysSetting> result = new PaginationResultVO<>(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
+        return result;
+    }
 
-	/**
-	 * 新增
-	 */
-	public Integer add(SysSetting bean) {
-		return this.sysSettingMapper.insert(bean);
-	}
+    /**
+     * 新增
+     */
+    public Integer add(SysSetting bean) {
+        return this.sysSettingMapper.insert(bean);
+    }
 
-	/**
-	 * 批量新增
-	 */
-	public Integer addBatch(List<SysSetting> beanList) {
-		if (beanList == null || beanList.isEmpty()) {
-			return 0;
-		}
-		return this.sysSettingMapper.insertBatch(beanList);
-	}
+    /**
+     * 批量新增
+     */
+    public Integer addBatch(List<SysSetting> beanList) {
+        if (beanList == null || beanList.isEmpty()) {
+            return 0;
+        }
+        return this.sysSettingMapper.insertBatch(beanList);
+    }
 
-	/**
-	 * 批量新增或修改
-	 */
-	public Integer addOrUpdateBatch(List<SysSetting> beanList) {
-		if (beanList == null || beanList.isEmpty()) {
-			return 0;
-		}
-		return this.sysSettingMapper.insertOrUpdateBatch(beanList);
-	}
+    /**
+     * 批量新增或修改
+     */
+    public Integer addOrUpdateBatch(List<SysSetting> beanList) {
+        if (beanList == null || beanList.isEmpty()) {
+            return 0;
+        }
+        return this.sysSettingMapper.insertOrUpdateBatch(beanList);
+    }
 
-	/**
-	 * 根据Code查询
-	 */
-	public SysSetting getSysSettingByCode(String code) {
-		return this.sysSettingMapper.selectByCode(code);
-	}
+    /**
+     * 根据Code查询
+     */
+    public SysSetting getSysSettingByCode(String code) {
+        return this.sysSettingMapper.selectByCode(code);
+    }
 
-	/**
-	 * 根据Code更新
-	 */
-	public Integer updateSysSettingByCode(SysSetting sysSetting, String code) {
-		return this.sysSettingMapper.updateByCode(sysSetting, code);
-	}
+    /**
+     * 根据Code更新
+     */
+    public Integer updateSysSettingByCode(SysSetting sysSetting, String code) {
+        return this.sysSettingMapper.updateByCode(sysSetting, code);
+    }
 
-	/**
-	 * 根据Code删除
-	 */
-	public Integer deleteSysSettingByCode(String code) {
-		return this.sysSettingMapper.deleteByCode(code);
-	}
+    /**
+     * 根据Code删除
+     */
+    public Integer deleteSysSettingByCode(String code) {
+        return this.sysSettingMapper.deleteByCode(code);
+    }
 
-	@Override
-	public void refreshCache() {
-		try{
-			SysSettingDto sysSettingDto = new SysSettingDto();
-			List<SysSetting> list = this.sysSettingMapper.selectList(new SysSettingQuery());
-			for (SysSetting sysSetting: list
-			) {
-				String jsonContent = sysSetting.getJsonContent();
-				if (StringTools.isEmpty(jsonContent)){
-					continue;
-				}
-				String code = sysSetting.getCode();
-				SysSettingCodeEnum sysSettingCodeEnum = SysSettingCodeEnum.getByCode(code);
-				PropertyDescriptor pd = new PropertyDescriptor(sysSettingCodeEnum.getPropName(),SysSettingDto.class);
-				Method method = pd.getWriteMethod();
-				Class clazz = Class.forName(sysSettingCodeEnum.getClazz());
-				method.invoke(sysSettingDto,JsonUtils.convertJson2Obj(jsonContent,clazz));
-			}
-			SysCacheUtils.refresh(sysSettingDto);
-		} catch (Exception e){
-			logger.error("刷新缓存失败",e);
-		}
-	}
+    @Override
+    public void refreshCache() {
+        try {
+            SysSettingDto sysSettingDto = new SysSettingDto();
+            List<SysSetting> list = this.sysSettingMapper.selectList(new SysSettingQuery());
+            for (SysSetting sysSetting : list
+            ) {
+                String jsonContent = sysSetting.getJsonContent();
+                if (StringTools.isEmpty(jsonContent)) {
+                    continue;
+                }
+                String code = sysSetting.getCode();
+                SysSettingCodeEnum sysSettingCodeEnum = SysSettingCodeEnum.getByCode(code);
+                PropertyDescriptor pd = new PropertyDescriptor(sysSettingCodeEnum.getPropName(), SysSettingDto.class);
+                Method method = pd.getWriteMethod();
+                Class clazz = Class.forName(sysSettingCodeEnum.getClazz());
+                method.invoke(sysSettingDto, JsonUtils.convertJson2Obj(jsonContent, clazz));
+            }
+            SysCacheUtils.refresh(sysSettingDto);
+        } catch (Exception e) {
+            logger.error("刷新缓存失败", e);
+        }
+    }
 }

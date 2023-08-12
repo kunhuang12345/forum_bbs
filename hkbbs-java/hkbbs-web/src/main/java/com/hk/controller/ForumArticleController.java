@@ -317,5 +317,15 @@ public class ForumArticleController extends ABaseController {
         return getSuccessResponseVO(forumArticle.getArticleId());
     }
 
+    @RequestMapping("/search")
+    public ResponseVO search(@VerifyParam(min = 1) String keyword) {
+        ForumArticleQuery query = new ForumArticleQuery();
+        query.setTitleFuzzy(keyword);
+        // TODO 查询后分页
+        List<ForumArticle> listByParam = forumArticleService.findListByParam(query);
+        return getSuccessResponseVO(listByParam);
+
+    }
+
 
 }

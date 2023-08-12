@@ -10,6 +10,7 @@ public enum MessageTypeEnum {
 
     private Integer type;
     private String code;
+    private String desc;
 
     MessageTypeEnum(Integer type, String code, String desc) {
         this.type = type;
@@ -25,8 +26,14 @@ public enum MessageTypeEnum {
         }
         return null;
     }
-
-    private String desc;
+    public static MessageTypeEnum getByType(Integer type){
+        for (MessageTypeEnum item:MessageTypeEnum.values()){
+            if (item.getType().equals(type)){
+                return item;
+            }
+        }
+        return null;
+    }
 
     public Integer getType() {
         return type;

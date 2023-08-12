@@ -460,6 +460,26 @@
 		where article_id=#{article_id} and comment_id=#{comment_id} and send_user_id=#{send_user_id} and message_type=#{message_type}
 	</delete>
 
+	<select id="selectUserMessageCount" resultType="java.util.Map">
+        select message_type messageType, count(1) count
+        from user_message
+        where received_user_id=#{userId}
+          and status=1
+        group by message_type
+    </select>
 
+
+	<update id="updateMessageStatusBatch">
+        update user_message
+        set status=#{status}
+        <where>
+            <if test="receivedUserId!=null and receivedUserId!=''">
+                and received_user_id=#{receivedUserId}
+            </if>
+            <if test="messageType!=null">
+                and message_type=#{messageType}
+            </if>
+        </where>
+    </update>
 
 </mapper>

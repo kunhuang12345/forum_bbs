@@ -3,6 +3,7 @@ package com.hk.service;
 import java.util.List;
 import java.util.Date;
 
+import com.hk.entity.dto.UserMessageDto;
 import com.hk.utils.DateUtils;
 import com.hk.entity.enums.DateTimePatternEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -79,4 +80,7 @@ public interface UserMessageService {
 	 */
 	Integer deleteUserMessageByArticleIdAndCommentIdAndSendUserIdAndMessageType(String articleId, Integer commentId, String sendUserId, Integer messageType);
 
+    UserMessageDto getUserMessageCount(String userId);
+
+	void readMessageByType(String receivedUserId, Integer messageType);
 }
