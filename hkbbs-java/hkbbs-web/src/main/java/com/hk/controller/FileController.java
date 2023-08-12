@@ -36,6 +36,12 @@ public class FileController extends ABaseController {
     @Resource
     private WebConfig webConfig;
 
+    /**
+     * 上传文件
+     * @param file
+     * @return
+     * @throws BusinessException
+     */
     @RequestMapping("/upLoadImage")
     @GlobalInterceptor(checkLogin = true)
     public ResponseVO upLoadImage(MultipartFile file) throws BusinessException {
@@ -53,6 +59,12 @@ public class FileController extends ABaseController {
         return getSuccessResponseVO(fileMap);
     }
 
+    /**
+     * copy文件到本地
+     * @param file
+     * @return
+     * @throws BusinessException
+     */
     private String copyFile(MultipartFile file) throws BusinessException {
         try {
             String fileName = file.getOriginalFilename();
@@ -73,6 +85,7 @@ public class FileController extends ABaseController {
         }
     }
 
+    // 读取上传的temp文件
     @RequestMapping("/getImage/{imageFolder}/{imageName}")
     public void getImage(HttpServletResponse response,
                          @PathVariable("imageFolder") String imageFolder,
