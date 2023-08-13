@@ -10,11 +10,13 @@ import com.hk.entity.dto.FileUploadDto;
 import com.hk.entity.enums.*;
 import com.hk.entity.po.ForumArticleAttachment;
 import com.hk.entity.po.ForumBoard;
+import com.hk.entity.po.UserMessage;
 import com.hk.entity.query.ForumArticleAttachmentQuery;
 import com.hk.exception.BusinessException;
 import com.hk.mapper.ForumArticleAttachmentMapper;
 import com.hk.service.ForumBoardService;
 import com.hk.service.UserInfoService;
+import com.hk.service.UserMessageService;
 import com.hk.utils.FileUtils;
 import com.hk.utils.ImageUtils;
 import com.hk.utils.StringTools;
@@ -25,6 +27,7 @@ import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.query.ForumArticleQuery;
 import com.hk.mapper.ForumArticleMapper;
 import com.hk.entity.query.SimplePage;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,6 +41,9 @@ import javax.annotation.Resource;
  */
 @Service("forumArticleService")
 public class ForumArticleServiceImpl implements ForumArticleService {
+
+    @Resource
+    private UserMessageService userMessageService;
 
     @Resource
     private ForumArticleMapper<ForumArticle, ForumArticleQuery> forumArticleMapper;
@@ -59,6 +65,10 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 
     @Resource
     private AppConfig appConfig;
+
+    @Lazy // 延时加载
+    @Resource
+    private ForumArticleService forumArticleService;
 
     /**
      * 根据条件查询列表
@@ -291,8 +301,12 @@ public class ForumArticleServiceImpl implements ForumArticleService {
             if (board == null || board.getPostType().equals(Constants.ONE) && !isAdmin) {
                 throw new BusinessException("二级板块不存在");
             }
+            forumArticle.setBoardName(board.getBoardName());
+        } else {
+            forumArticle.setBoardId(0);
+            forumArticle.setBoardName("");
         }
-        forumArticle.setBoardName(forumArticle.getBoardName());
+
     }
 
     /**
@@ -340,6 +354,80 @@ public class ForumArticleServiceImpl implements ForumArticleService {
             fileUploadDto.setLocalPath(fileUploadDto.getLocalPath());
             forumArticleAttachmentMapper.updateByFileId(updateInfo, dbInfo.getFileId());
 
+        }
+    }
+
+    /**
+     * 删除文章
+     */
+    @Override
+    public void delArticle(String articleIds) throws BusinessException {
+        String[] articleIdArray = ",".split(articleIds);
+        for (String articleId : articleIdArray) {
+            forumArticleService.delArticleSingle(articleId);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void delArticleSingle(String articleId) throws BusinessException {
+        ForumArticle forumArticle = getForumArticleByArticleId(articleId);
+        if (forumArticle == null || forumArticle.getStatus().equals(ArticleStatusEnum.DEL.getStatus())) {
+            return;
+        }
+        ForumArticle updateInfo = new ForumArticle();
+        updateInfo.setStatus(ArticleStatusEnum.DEL.getStatus());
+        forumArticleMapper.updateByArticleId(updateInfo,articleId);
+
+        // 扣除积分
+        Integer integral = SysCacheUtils.getSysSetting().getPostSetting().getPostIntegral();
+        if (integral > 0 && ArticleStatusEnum.AUDIT.getStatus().equals(forumArticle.getStatus())) {
+            userInfoService.updateUserIntegral(forumArticle.getUserId(),UserIntegralOperateTypeEnum.DEL_ARTICLE,UserIntegralChangeTypeEnum.REDUCE.getChangeType(), integral);
+        }
+
+        // 发送系统消息
+        UserMessage userMessage = new UserMessage();
+        userMessage.setReceivedUserId(forumArticle.getUserId());
+        userMessage.setMessageType(MessageTypeEnum.SYS.getType());
+        userMessage.setCreateTime(new Date());
+        userMessage.setStatus(MessageStatusEnum.NO_READ.getStatus());
+        userMessage.setMessageContent("文章" + forumArticle.getTitle() + "被管理员删除");
+        userMessageService.add(userMessage);
+    }
+
+    @Override
+    public void updateBoard(String articleId, Integer pBoardId, Integer boardId) throws BusinessException {
+        ForumArticle forumArticle = new ForumArticle();
+        forumArticle.setPBoardId(pBoardId);
+        forumArticle.setBoardId(boardId);
+        // 重置板块信息
+        resetBoardInfo(true,forumArticle);
+        forumArticleMapper.updateByArticleId(forumArticle,articleId);
+    }
+
+    @Override
+    public void auditArticle(String articleIds) throws BusinessException {
+        String[] articleIdArray = ",".split(articleIds);
+        for (String articleId : articleIdArray) {
+            forumArticleService.auditArticleSingle(articleId);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void auditArticleSingle(String articleId) throws BusinessException {
+        ForumArticle forumArticle = getForumArticleByArticleId(articleId);
+        if (forumArticle == null || !forumArticle.getStatus().equals(ArticleStatusEnum.NO_AUDIT.getStatus())) {
+            return;
+        }
+
+        ForumArticle updateInfo = new ForumArticle();
+        updateInfo.setStatus(ArticleStatusEnum.AUDIT.getStatus());
+        forumArticleMapper.updateByArticleId(updateInfo,articleId);
+
+        // 加积分
+        Integer integral = SysCacheUtils.getSysSetting().getPostSetting().getPostIntegral();
+        if (integral > 0 && ArticleStatusEnum.AUDIT.getStatus().equals(forumArticle.getStatus())) {
+            userInfoService.updateUserIntegral(forumArticle.getUserId(),UserIntegralOperateTypeEnum.POST_ARTICLE,UserIntegralChangeTypeEnum.ADD.getChangeType(), integral);
         }
     }
 

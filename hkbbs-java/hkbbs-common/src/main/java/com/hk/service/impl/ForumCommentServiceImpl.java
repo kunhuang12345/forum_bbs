@@ -25,6 +25,8 @@ import com.hk.entity.query.ForumCommentQuery;
 import com.hk.mapper.ForumCommentMapper;
 import com.hk.entity.query.SimplePage;
 import com.hk.utils.SysCacheUtils;
+import org.apache.tomcat.util.bcel.classfile.Constant;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,6 +55,10 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 
     @Resource
     private FileUtils fileUtils;
+
+    @Lazy
+    @Resource
+    private ForumCommentService forumCommentService;
 
     /**
      * 根据条件查询列表
@@ -227,8 +233,9 @@ public class ForumCommentServiceImpl implements ForumCommentService {
         if (needAudit) {
             return;
         }
-        updateCommentInfo(comment,forumArticle,pComment);
+        updateCommentInfo(comment, forumArticle, pComment);
     }
+
 
     public void updateCommentInfo(ForumComment comment, ForumArticle article, ForumComment pComment) throws BusinessException {
         Integer commentIntegral = SysCacheUtils.getSysSetting().getCommentSetting().getCommentIntegral();
@@ -243,7 +250,7 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 
         // 修改文章评论数
         if (comment.getCommentId() == 0) {
-            this.forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.COMMENT_COUNT.getType(), Constants.ONE,article.getArticleId());
+            this.forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.COMMENT_COUNT.getType(), Constants.ONE, article.getArticleId());
         }
 
         // 记录消息
@@ -267,8 +274,63 @@ public class ForumCommentServiceImpl implements ForumCommentService {
         } else if (comment.getPCommentId() != 0 && !StringTools.isEmpty(comment.getReplyUserId())) {
             userMessage.setReceivedUserId(comment.getReplyUserId());
         }
-        if (comment.getUserId().equals(userMessage.getReceivedUserId()))  {
+        if (comment.getUserId().equals(userMessage.getReceivedUserId())) {
             userMessageService.add(userMessage);
         }
     }
+
+
+    @Override
+    public void delComment(String commentIds) throws BusinessException {
+        String[] commentIdArray = ",".split(commentIds);
+        for (String commentId : commentIdArray) {
+            forumCommentService.delCommentSingle(Integer.valueOf(commentId));
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void delCommentSingle(Integer commentId) throws BusinessException {
+        ForumComment forumComment = forumCommentMapper.selectByCommentId(commentId);
+        if (null == forumComment || forumComment.getStatus().equals(CommentStatusEnum.DEL.getStatus())) {
+            return;
+        }
+        ForumComment comment = new ForumComment();
+        comment.setStatus(CommentStatusEnum.DEL.getStatus());
+        forumCommentMapper.updateByCommentId(comment, commentId);
+
+        // 如果评论已审核更新文章评论数量
+        if (CommentStatusEnum.AUDIT.getStatus().equals(forumComment.getStatus())) {
+            if (forumComment.getPCommentId() == 0) {
+                forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.COMMENT_COUNT.getType(), -Constants.ONE, forumComment.getArticleId());
+            }
+            Integer integral = SysCacheUtils.getSysSetting().getCommentSetting().getCommentIntegral();
+            userInfoService.updateUserIntegral(forumComment.getUserId(), UserIntegralOperateTypeEnum.DEL_COMMENT, UserIntegralChangeTypeEnum.REDUCE.getChangeType(), integral);
+        }
+
+        // 发送系统消息
+        UserMessage userMessage = new UserMessage();
+        userMessage.setReceivedUserId(forumComment.getUserId());
+        userMessage.setMessageType(MessageTypeEnum.SYS.getType());
+        userMessage.setCreateTime(new Date());
+        userMessage.setStatus(MessageStatusEnum.NO_READ.getStatus());
+        userMessage.setMessageContent("评论【" + forumComment.getContent() + "】被管理员删除");
+        userMessageService.add(userMessage);
+    }
+
+    @Override
+    public void auditComment(String commentIds) {
+        String[] commentIdArray = ",".split(commentIds);
+        for (String commentId : commentIdArray) {
+            forumCommentService.auditCommentSingle(Integer.valueOf(commentId));
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void auditCommentSingle(Integer commentId) {
+
+    }
+
+
 }

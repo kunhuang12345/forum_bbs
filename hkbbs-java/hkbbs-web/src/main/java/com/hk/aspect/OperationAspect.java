@@ -35,6 +35,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Date;
@@ -189,6 +190,29 @@ public class OperationAspect {
         String sessionKey = Constants.SESSION_KEY_FREQUENCY + curDate + typeEnum.getOperateType();
         Integer count = (Integer) session.getAttribute(sessionKey);
         session.setAttribute(sessionKey, count + 1);
+    }
+
+    /**
+     * 校验一个对象
+     */
+    private void checkObjValue(Parameter parameter, Object value) throws BusinessException {
+        try {
+            String typeName = parameter.getParameterizedType().getTypeName();
+            Class clazz = Class.forName(typeName);
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field:fields) {
+                VerifyParam fieldVerifyParam = field.getAnnotation(VerifyParam.class);
+                if (fieldVerifyParam == null) {
+                    continue;
+                }
+                field.setAccessible(true);
+                Object resultValue = field.get(value);
+                checkValue(resultValue,fieldVerifyParam);
+            }
+        } catch (Exception e) {
+            logger.error("参数校验失败",e);
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
     }
 
     private void validateParams(Method method, Object[] arguments) throws BusinessException {

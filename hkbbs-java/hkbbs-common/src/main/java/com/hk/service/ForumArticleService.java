@@ -12,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.hk.entity.po.ForumArticle;
 import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.query.ForumArticleQuery;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -72,4 +73,17 @@ public interface ForumArticleService {
     void postArticle(Boolean isAdmin, ForumArticle article, ForumArticleAttachment articleAttachment, MultipartFile cover, MultipartFile attachment) throws BusinessException;
 
     void updateArticle(Boolean isAdmin, ForumArticle article, ForumArticleAttachment articleAttachment, MultipartFile cover, MultipartFile attachment) throws BusinessException;
+
+    void delArticle(String articleIds) throws BusinessException;
+
+    void delArticleSingle(String articleId) throws BusinessException;
+
+    void updateBoard(String articleId, Integer pBoardId, Integer boardId) throws BusinessException;
+
+
+    /**
+     * 文章审核
+     * */
+    void auditArticle(String articleIds) throws BusinessException;
+    void auditArticleSingle(String articleId) throws BusinessException;
 }

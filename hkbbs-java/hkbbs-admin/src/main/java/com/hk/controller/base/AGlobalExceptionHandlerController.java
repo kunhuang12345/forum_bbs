@@ -1,10 +1,8 @@
-package com.hk.controller;
+package com.hk.controller.base;
 
-import com.hk.controller.ABaseController;
 import com.hk.entity.enums.ResponseCodeEnum;
 import com.hk.entity.vo.ResponseVO;
 import com.hk.exception.BusinessException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
@@ -32,7 +30,13 @@ public class AGlobalExceptionHandlerController extends ABaseController {
         } else if (e instanceof BusinessException) {
             // 业务错误
             BusinessException biz = (BusinessException) e;
-            ajaxResponse.setCode(biz.getCode());
+            ajaxResponse.setCode(biz.getCode() == null ? ResponseCodeEnum.CODE_600.getCode() : biz.getCode());
+            ajaxResponse.setInfo(biz.getMessage());
+            ajaxResponse.setStatus(STATUS_ERROR);
+        } else if (e.getCause() instanceof BusinessException) {
+            // 业务错误
+            BusinessException biz = (BusinessException) e.getCause();
+            ajaxResponse.setCode(biz.getCode() == null ? ResponseCodeEnum.CODE_600.getCode() : biz.getCode());
             ajaxResponse.setInfo(biz.getMessage());
             ajaxResponse.setStatus(STATUS_ERROR);
         } else if (e instanceof BindException || e instanceof MethodArgumentTypeMismatchException) {

@@ -1,22 +1,15 @@
 package com.hk.controller;
 
-import com.hk.annotation.GlobalInterceptor;
 import com.hk.controller.base.ABaseController;
 import com.hk.entity.config.WebConfig;
 import com.hk.entity.constants.Constants;
-import com.hk.entity.enums.ResponseCodeEnum;
-import com.hk.entity.enums.UserOperatefrequencyTypeEnum;
-import com.hk.entity.vo.ResponseVO;
-import com.hk.exception.BusinessException;
 import com.hk.utils.StringTools;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -25,8 +18,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/file")
@@ -37,54 +28,7 @@ public class FileController extends ABaseController {
     @Resource
     private WebConfig webConfig;
 
-    /**
-     * 上传文件
-     * @param file
-     * @return
-     * @throws BusinessException
-     */
-    @RequestMapping("/upLoadImage")
-    @GlobalInterceptor(checkLogin = true, frequencyType = UserOperatefrequencyTypeEnum.IMAGE_UPLOAD)
-    public ResponseVO upLoadImage(MultipartFile file) throws BusinessException {
-        if (file == null) {
-            throw new BusinessException(ResponseCodeEnum.CODE_600);
-        }
-        String fileName = file.getOriginalFilename();
-        String fileExtName = StringTools.getFileSuffix(fileName);
-        if (!ArrayUtils.contains(Constants.IMAGE_SUFFIX, fileExtName)) {
-            throw new BusinessException(ResponseCodeEnum.CODE_600);
-        }
-        String path = copyFile(file);
-        Map<String, String> fileMap = new HashMap<>();
-        fileMap.put("fileName", path);
-        return getSuccessResponseVO(fileMap);
-    }
 
-    /**
-     * copy文件到本地
-     * @param file
-     * @return
-     * @throws BusinessException
-     */
-    private String copyFile(MultipartFile file) throws BusinessException {
-        try {
-            String fileName = file.getOriginalFilename();
-            String fileExtName = StringTools.getFileSuffix(fileName);
-            String fileRealName = StringTools.getRandomString(Constants.LENGTH_30) + fileExtName;
-            String folderPath = webConfig.getProjectFolder() + Constants.FILE_FOLDER_FILE + Constants.FILE_FOLDER_TEMP + "/";
-            File folder = new File(folderPath);
-            if (!folder.exists()) {
-                folder.mkdirs();
-            }
-
-            File upLoadFile = new File(folderPath + fileRealName);
-            file.transferTo(upLoadFile);
-            return Constants.FILE_FOLDER_TEMP + "/" + fileRealName;
-        } catch (Exception e) {
-            logger.error("上传文件失败", e);
-            throw new BusinessException("上传文件失败");
-        }
-    }
 
     // 读取上传的temp文件
     @RequestMapping("/getImage/{imageFolder}/{imageName}")
