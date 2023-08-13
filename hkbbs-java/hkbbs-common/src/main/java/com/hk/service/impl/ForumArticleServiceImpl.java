@@ -296,7 +296,7 @@ public class ForumArticleServiceImpl implements ForumArticleService {
         forumArticle.setPBoardName(pBoard.getBoardName());
 
 
-        if (forumArticle.getBoardId() != null || forumArticle.getBoardId() != 0) {
+        if (forumArticle.getBoardId() != null && forumArticle.getBoardId() != 0) {
             ForumBoard board = forumBoardService.getForumBoardByBoardId(forumArticle.getBoardId());
             if (board == null || board.getPostType().equals(Constants.ONE) && !isAdmin) {
                 throw new BusinessException("二级板块不存在");
@@ -362,7 +362,7 @@ public class ForumArticleServiceImpl implements ForumArticleService {
      */
     @Override
     public void delArticle(String articleIds) throws BusinessException {
-        String[] articleIdArray = ",".split(articleIds);
+        String[] articleIdArray = articleIds.split(",");
         for (String articleId : articleIdArray) {
             forumArticleService.delArticleSingle(articleId);
         }
@@ -406,7 +406,7 @@ public class ForumArticleServiceImpl implements ForumArticleService {
 
     @Override
     public void auditArticle(String articleIds) throws BusinessException {
-        String[] articleIdArray = ",".split(articleIds);
+        String[] articleIdArray = articleIds.split(",");
         for (String articleId : articleIdArray) {
             forumArticleService.auditArticleSingle(articleId);
         }

@@ -1,6 +1,7 @@
 package com.hk.controller.base;
 
 import com.hk.entity.constants.Constants;
+import com.hk.entity.dto.SessionAdminUserDto;
 import com.hk.entity.dto.SessionWebUserDto;
 import com.hk.entity.enums.ResponseCodeEnum;
 import com.hk.entity.vo.PaginationResultVO;
@@ -52,9 +53,9 @@ public class ABaseController {
         return ip;
     }
 
-    protected SessionWebUserDto getUserInfoFromSession(HttpSession session) {
-        SessionWebUserDto sessionWebUserDto = (SessionWebUserDto) session.getAttribute(Constants.SESSION_KEY);
-        return sessionWebUserDto;
+    protected SessionAdminUserDto getUserInfoFromSession(HttpSession session) {
+        SessionAdminUserDto sessionAdminUserDto = (SessionAdminUserDto) session.getAttribute(Constants.SESSION_KEY);
+        return sessionAdminUserDto;
     }
 
     protected <S,T>PaginationResultVO<T> convert2PaginationVO(PaginationResultVO<S> result, Class<T> clazz){

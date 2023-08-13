@@ -76,6 +76,6 @@ public interface ForumCommentService {
 	void delComment(String commentIds) throws BusinessException;
 	void delCommentSingle(Integer commentId) throws BusinessException;
 
-	void auditComment(String commentIds);
-	void auditCommentSingle(Integer commentId);
+	void auditComment(String commentIds) throws BusinessException;
+	void auditCommentSingle(Integer commentId) throws BusinessException;
 }

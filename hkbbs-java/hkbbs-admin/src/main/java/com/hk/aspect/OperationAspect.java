@@ -63,7 +63,7 @@ public class OperationAspect {
     }
 
     @Around("requestInterceptor()")
-    public void interceptorDo(ProceedingJoinPoint point) throws BusinessException {
+    public Object interceptorDo(ProceedingJoinPoint point) throws BusinessException {
         try {
             Object target = point.getTarget(); // 获取到目标类对象
             Object[] arguments = point.getArgs(); // 获取到传入的参数内容
@@ -72,13 +72,14 @@ public class OperationAspect {
             Method method = target.getClass().getMethod(methodName, parameterTypes);
             GlobalInterceptor interceptor = method.getAnnotation(GlobalInterceptor.class);
 
-            if (null == interceptor) return;
+            if (null == interceptor) return null;
 
             // 校验参数
             if (interceptor.checkParams()) {
                 validateParams(method, arguments);
             }
 
+            return point.proceed();
         } catch (BusinessException e) {
             logger.error("业务异常", e);
             throw e;

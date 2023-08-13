@@ -50,14 +50,13 @@ public class ForumArticleController extends ABaseController {
 
     @RequestMapping("/loadArticle")
     public ResponseVO loadArticle(ForumArticleQuery forumArticleQuery) {
-
         forumArticleQuery.setOrderBy("post_time desc");
         return getSuccessResponseVO(forumArticleService.findListByPage(forumArticleQuery));
 
     }
 
     @RequestMapping("/delArticle")
-    public ResponseVO delArticle(@VerifyParam String articleIds) throws BusinessException {
+    public ResponseVO delArticle(@VerifyParam(required = true) String articleIds) throws BusinessException {
         forumArticleService.delArticle(articleIds);
 
         return getSuccessResponseVO(null);
@@ -97,9 +96,9 @@ public class ForumArticleController extends ABaseController {
      */
     @RequestMapping("/attachmentDownload")
     @GlobalInterceptor(checkParams = true, checkLogin = true)
-    public void attachmentDownload(HttpSession session, HttpServletRequest request, HttpServletResponse response,
+    public void attachmentDownload(HttpServletRequest request, HttpServletResponse response,
                                    @VerifyParam(required = true) String fileId) throws BusinessException {
-        ForumArticleAttachment attachment = articleAttachmentService.downloadAttachment(fileId, getUserInfoFromSession(session));
+        ForumArticleAttachment attachment = articleAttachmentService.getForumArticleAttachmentByFileId(fileId);
         InputStream in = null;
         OutputStream out = null;
         String downloadFileName = attachment.getFileName();
@@ -174,18 +173,23 @@ public class ForumArticleController extends ABaseController {
 
     @RequestMapping("/loadComment4Article")
     public ResponseVO loadComment4Article(ForumCommentQuery forumCommentQuery) throws BusinessException {
-
-        forumCommentQuery.setLoadChildren(true);
         forumCommentQuery.setOrderBy("post_time desc");
         forumCommentQuery.setPCommentId(0);
-        return getSuccessResponseVO(forumCommentService.findListByPage(forumCommentQuery));
+        return getSuccessResponseVO(forumCommentService.findListByParam(forumCommentQuery));
     }
 
     @RequestMapping("/delComment")
     public ResponseVO delComment(@VerifyParam(required = true) String commentIds) throws BusinessException {
         forumCommentService.delComment(commentIds);
         return getSuccessResponseVO(null);
-
     }
+    @RequestMapping("/auditComment")
+    public ResponseVO auditComment(@VerifyParam(required = true) String commentIds) throws BusinessException {
+        forumCommentService.auditComment(commentIds);
+        return getSuccessResponseVO(null);
+    }
+
+
+
 
 }

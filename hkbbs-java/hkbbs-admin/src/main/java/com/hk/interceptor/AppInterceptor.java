@@ -8,6 +8,7 @@ import com.hk.exception.BusinessException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -30,7 +31,7 @@ public class AppInterceptor implements HandlerInterceptor {
         if (null == handler) {
             return false;
         }
-        if (!(handler instanceof HandlerInterceptor)) {
+        if (!(handler instanceof HandlerMethod)) {
             return true;
         }
         // 如果是登录请求，放行

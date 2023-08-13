@@ -249,7 +249,7 @@ public class ForumCommentServiceImpl implements ForumCommentService {
         }
 
         // 修改文章评论数
-        if (comment.getCommentId() == 0) {
+        if (comment.getPCommentId() == 0) {
             this.forumArticleMapper.updateArticleCount(UpdateArticleCountTypeEnum.COMMENT_COUNT.getType(), Constants.ONE, article.getArticleId());
         }
 
@@ -274,15 +274,14 @@ public class ForumCommentServiceImpl implements ForumCommentService {
         } else if (comment.getPCommentId() != 0 && !StringTools.isEmpty(comment.getReplyUserId())) {
             userMessage.setReceivedUserId(comment.getReplyUserId());
         }
-        if (comment.getUserId().equals(userMessage.getReceivedUserId())) {
+        if (!comment.getUserId().equals(userMessage.getReceivedUserId())) {
             userMessageService.add(userMessage);
         }
     }
 
-
     @Override
     public void delComment(String commentIds) throws BusinessException {
-        String[] commentIdArray = ",".split(commentIds);
+        String[] commentIdArray = commentIds.split(",");
         for (String commentId : commentIdArray) {
             forumCommentService.delCommentSingle(Integer.valueOf(commentId));
         }
@@ -319,8 +318,8 @@ public class ForumCommentServiceImpl implements ForumCommentService {
     }
 
     @Override
-    public void auditComment(String commentIds) {
-        String[] commentIdArray = ",".split(commentIds);
+    public void auditComment(String commentIds) throws BusinessException {
+        String[] commentIdArray = commentIds.split(",");
         for (String commentId : commentIdArray) {
             forumCommentService.auditCommentSingle(Integer.valueOf(commentId));
         }
@@ -328,9 +327,21 @@ public class ForumCommentServiceImpl implements ForumCommentService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void auditCommentSingle(Integer commentId) {
+    public void auditCommentSingle(Integer commentId) throws BusinessException {
+        ForumComment forumComment = forumCommentMapper.selectByCommentId(commentId);
+        if (null == forumComment || !forumComment.getStatus().equals(CommentStatusEnum.NO_AUDIT.getStatus())) {
+            return;
+        }
+        ForumComment comment = new ForumComment();
+        comment.setStatus(CommentStatusEnum.AUDIT.getStatus());
+        forumCommentMapper.updateByCommentId(comment, commentId);
 
+        ForumArticle forumArticle = forumArticleMapper.selectByArticleId(forumComment.getArticleId());
+        ForumComment pComment = null;
+        if (forumComment.getPCommentId()!=0 && StringTools.isEmpty(forumComment.getReplyUserId())) {
+            pComment = forumCommentMapper.selectByCommentId(forumComment.getPCommentId());
+        }
+        updateCommentInfo(forumComment,forumArticle,pComment);
     }
-
 
 }
