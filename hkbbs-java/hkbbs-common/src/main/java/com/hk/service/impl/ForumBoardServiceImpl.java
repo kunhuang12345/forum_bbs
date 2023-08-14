@@ -2,6 +2,11 @@ package com.hk.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.hk.entity.po.ForumArticle;
+import com.hk.entity.query.ForumArticleQuery;
+import com.hk.exception.BusinessException;
+import com.hk.mapper.ForumArticleMapper;
 import com.hk.service.ForumBoardService;
 import com.hk.entity.po.ForumBoard;
 import com.hk.entity.vo.PaginationResultVO;
@@ -10,6 +15,7 @@ import com.hk.mapper.ForumBoardMapper;
 import com.hk.entity.query.SimplePage;
 import com.hk.entity.enums.PageSize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -20,6 +26,9 @@ import javax.annotation.Resource;
  */
 @Service("forumBoardService")
 public class ForumBoardServiceImpl implements ForumBoardService {
+
+	@Resource
+	private ForumArticleMapper<ForumArticle, ForumArticleQuery> forumArticleMapper;
 
 	@Resource
 	private ForumBoardMapper<ForumBoard, ForumBoardQuery> forumBoardMapper;
@@ -106,6 +115,41 @@ public class ForumBoardServiceImpl implements ForumBoardService {
 		boardQuery.setPostType(postType);
 		List<ForumBoard> forumBoards = forumBoardMapper.selectList(boardQuery);
 		return convertLine2Tree(forumBoards,0);
+	}
+
+    @Override
+    public void saveForumBoard(ForumBoard forumBoard) throws BusinessException {
+        if (forumBoard.getBoardId() == null) {
+			ForumBoardQuery forumBoardQuery = new ForumBoardQuery();
+			forumBoardQuery.setBoardId(forumBoard.getPBoardId());
+
+			Integer count = forumBoardMapper.selectCount(forumBoardQuery);
+			forumBoard.setSort(count + 1);
+			forumBoardMapper.insert(forumBoard);
+		} else {
+			ForumBoard dbInfo = forumBoardMapper.selectByBoardId(forumBoard.getBoardId());
+			if (dbInfo == null) {
+				throw new BusinessException("板块信息不存在");
+			}
+			forumBoardMapper.updateByBoardId(forumBoard,forumBoard.getBoardId());
+			if (!dbInfo.getBoardName().equals(forumBoard.getBoardName())) {
+				forumArticleMapper.updateBoardNameBatch(dbInfo.getPBoardId()==0?0:1, forumBoard.getBoardName(), forumBoard.getBoardId());
+			}
+		}
+    }
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void changeSort(String boardIds) {
+		String[] boardIdArray = boardIds.split(",");
+		Integer index = 1;
+		for (String boardIdStr : boardIdArray) {
+			Integer boardId = Integer.valueOf(boardIdStr);
+			ForumBoard board = new ForumBoard();
+			board.setSort(index);
+			forumBoardMapper.updateByBoardId(board,boardId);
+			index++;
+		}
 	}
 
 	private List<ForumBoard> convertLine2Tree(List<ForumBoard> dataList,Integer pid) {

@@ -4,6 +4,7 @@ import java.util.List;
 import com.hk.entity.po.ForumBoard;
 import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.query.ForumBoardQuery;
+import com.hk.exception.BusinessException;
 
 /**
  * @Description:文章板块信息Service
@@ -64,4 +65,7 @@ public interface ForumBoardService {
 	List<ForumBoard> getBordTree(Integer postType);
 
 
+    void saveForumBoard(ForumBoard forumBoard) throws BusinessException;
+
+	void changeSort(String boardIds);
 }

@@ -726,4 +726,24 @@
 		where article_id=#{articleId}
 	</update>
 
+	<update id="updateBoardNameBatch">
+		update forum_article
+		<set>
+			<if test="boardType==0">
+				p_board_name=#{boardName},
+			</if>
+			<if test="boardType==1">
+				board_name=#{boardName},
+			</if>
+		</set>
+		<where>
+			<if test="boardType==0">
+				p_board_id=#{boardId},
+			</if>
+			<if test="boardType==1">
+				board_id=#{boardId},
+			</if>
+		</where>
+	</update>
+
 </mapper>
