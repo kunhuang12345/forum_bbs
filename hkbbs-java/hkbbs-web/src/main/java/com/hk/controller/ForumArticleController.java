@@ -88,8 +88,8 @@ public class ForumArticleController extends ABaseController {
         SessionWebUserDto userInfoFromSession = getUserInfoFromSession(session);
         ForumArticle forumArticle = forumArticleService.readArticle(articleId);
 
-        if (ArticleStatusEnum.AUDIT.getStatus().equals(forumArticle.getStatus()) ||
-                (ArticleStatusEnum.NO_AUDIT.getStatus().equals(forumArticle.getStatus()) &&
+        if (ArticleStatusEnum.AUDIT.getStatus().equals(forumArticle.getStatus()) || // 文章已审核
+                (ArticleStatusEnum.NO_AUDIT.getStatus().equals(forumArticle.getStatus()) && // 文章未审核同时 （用户已登录同时(文章是用户发表的))
                         (userInfoFromSession != null &&
                                 (userInfoFromSession.getUserId().equals(forumArticle.getUserId()) || userInfoFromSession.getAdmin())))
         ) {
