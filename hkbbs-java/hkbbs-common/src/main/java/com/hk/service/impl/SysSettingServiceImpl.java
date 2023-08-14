@@ -8,6 +8,7 @@ import com.hk.entity.dto.SysSetting4AuditDto;
 import com.hk.entity.dto.SysSetting4CommentDto;
 import com.hk.entity.dto.SysSettingDto;
 import com.hk.entity.enums.SysSettingCodeEnum;
+import com.hk.exception.BusinessException;
 import com.hk.service.SysSettingService;
 import com.hk.entity.po.SysSetting;
 import com.hk.entity.vo.PaginationResultVO;
@@ -18,9 +19,11 @@ import com.hk.entity.enums.PageSize;
 import com.hk.utils.JsonUtils;
 import com.hk.utils.StringTools;
 import com.hk.utils.SysCacheUtils;
+import com.mysql.cj.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -113,7 +116,7 @@ public class SysSettingServiceImpl implements SysSettingService {
     }
 
     @Override
-    public void refreshCache() {
+    public SysSettingDto refreshCache() throws BusinessException {
         try {
             SysSettingDto sysSettingDto = new SysSettingDto();
             List<SysSetting> list = this.sysSettingMapper.selectList(new SysSettingQuery());
@@ -131,8 +134,35 @@ public class SysSettingServiceImpl implements SysSettingService {
                 method.invoke(sysSettingDto, JsonUtils.convertJson2Obj(jsonContent, clazz));
             }
             SysCacheUtils.refresh(sysSettingDto);
+            return sysSettingDto;
         } catch (Exception e) {
             logger.error("刷新缓存失败", e);
+        }
+        throw new BusinessException("刷新缓存失败");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveSetting(SysSettingDto sysSettingDto) throws BusinessException {
+        try {
+            Class clazz = SysSettingService.class;
+            for (SysSettingCodeEnum codeEnum : SysSettingCodeEnum.values()) {
+                // 取类中的codeEnum.getPropName属性
+                PropertyDescriptor pd = new PropertyDescriptor(codeEnum.getPropName(), clazz);
+
+                // 取属性的getter方法
+                Method method = pd.getReadMethod();
+                // 调用sysSettingDto的getter方法
+                Object invoke = method.invoke(sysSettingDto);
+                SysSetting sysSetting = new SysSetting();
+                sysSetting.setCode(codeEnum.getCode());
+                sysSetting.setJsonContent(JsonUtils.convertObj2Json(invoke));
+                sysSettingMapper.insertOrUpdate(sysSetting);
+            }
+
+        } catch (Exception e) {
+            logger.error("保存设置失败",e);
+            throw new BusinessException("保存设置失败");
         }
     }
 }

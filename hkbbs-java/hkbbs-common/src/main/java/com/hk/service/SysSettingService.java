@@ -1,9 +1,12 @@
 package com.hk.service;
 
 import java.util.List;
+
+import com.hk.entity.dto.SysSettingDto;
 import com.hk.entity.po.SysSetting;
 import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.query.SysSettingQuery;
+import com.hk.exception.BusinessException;
 
 /**
  * @Description:系统设置信息Service
@@ -59,6 +62,7 @@ public interface SysSettingService {
 	Integer deleteSysSettingByCode(String code);
 
 
-	void refreshCache();
+	SysSettingDto refreshCache() throws BusinessException;
 
+	void saveSetting(SysSettingDto sysSettingDto) throws BusinessException;
 }

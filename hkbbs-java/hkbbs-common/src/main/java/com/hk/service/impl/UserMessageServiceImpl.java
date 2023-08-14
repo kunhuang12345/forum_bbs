@@ -6,10 +6,10 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.hk.entity.dto.UserMessageDto;
-import com.hk.entity.enums.MessageStatusEnum;
-import com.hk.entity.enums.MessageTypeEnum;
+import com.hk.entity.enums.*;
+import com.hk.exception.BusinessException;
+import com.hk.service.UserInfoService;
 import com.hk.utils.DateUtils;
-import com.hk.entity.enums.DateTimePatternEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import com.hk.service.UserMessageService;
@@ -18,7 +18,6 @@ import com.hk.entity.vo.PaginationResultVO;
 import com.hk.entity.query.UserMessageQuery;
 import com.hk.mapper.UserMessageMapper;
 import com.hk.entity.query.SimplePage;
-import com.hk.entity.enums.PageSize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +35,9 @@ public class UserMessageServiceImpl implements UserMessageService {
 
     @Resource
     private UserMessageMapper<UserMessage, UserMessageQuery> userMessageMapper;
+
+    @Resource
+    private UserInfoService userInfoService;
 
     /**
      * 根据条件查询列表
@@ -159,6 +161,28 @@ public class UserMessageServiceImpl implements UserMessageService {
     @Transactional(rollbackFor = Exception.class)
     public void readMessageByType(String receivedUserId, Integer messageType) {
         userMessageMapper.updateMessageStatusBatch(receivedUserId,messageType, MessageStatusEnum.READ.getStatus());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void sendMessage(String userId, String message, Integer integral) throws BusinessException {
+        UserMessage userMessage = new UserMessage();
+        userMessage.setReceivedUserId(userId);
+        userMessage.setMessageType(MessageTypeEnum.SYS.getType());
+        userMessage.setCreateTime(new Date());
+        userMessage.setStatus(MessageStatusEnum.NO_READ.getStatus());
+        userMessage.setMessageContent(message);
+        add(userMessage);
+
+        UserIntegralChangeTypeEnum changeTypeEnum = UserIntegralChangeTypeEnum.ADD;
+        if (integral != null && integral != 0) {
+            if (integral < 0) {
+                integral = -1*integral;
+                changeTypeEnum = UserIntegralChangeTypeEnum.REDUCE;
+            }
+            userInfoService.updateUserIntegral(userId,UserIntegralOperateTypeEnum.ADMIN, changeTypeEnum.getChangeType(), integral);
+        }
+
     }
 
 }

@@ -9,21 +9,15 @@ import com.hk.entity.config.WebConfig;
 import com.hk.entity.constants.Constants;
 import com.hk.entity.dto.SessionWebUserDto;
 import com.hk.entity.enums.*;
-import com.hk.entity.po.UserIntegralRecord;
-import com.hk.entity.po.UserMessage;
-import com.hk.entity.query.UserIntegralRecordQuery;
-import com.hk.entity.query.UserMessageQuery;
+import com.hk.entity.po.*;
+import com.hk.entity.query.*;
 import com.hk.exception.BusinessException;
-import com.hk.mapper.UserIntegralRecordMapper;
-import com.hk.mapper.UserMessageMapper;
+import com.hk.mapper.*;
 import com.hk.service.EmailCodeService;
+import com.hk.service.ForumArticleService;
 import com.hk.utils.*;
 import com.hk.service.UserInfoService;
-import com.hk.entity.po.UserInfo;
 import com.hk.entity.vo.PaginationResultVO;
-import com.hk.entity.query.UserInfoQuery;
-import com.hk.mapper.UserInfoMapper;
-import com.hk.entity.query.SimplePage;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +54,12 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 	@Resource
 	private FileUtils fileUtils;
+
+	@Resource
+	private ForumArticleMapper<ForumArticle, ForumArticleQuery> forumArticleMapper;
+
+	@Resource
+	private ForumCommentMapper<ForumComment, ForumCommentQuery> forumCommentMapper;
 
 	/**
 	 * 根据条件查询列表
@@ -310,7 +310,25 @@ public class UserInfoServiceImpl implements UserInfoService {
 		}
     }
 
-    public String getIpAddress(String ip) {
+	/**
+	 * 更新用户状态
+	 * @param status
+	 * @param userId
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+    public void updateUserStatus(Integer status, String userId) {
+        if (UserStatusEnum.DISABLE.getStatus().equals(status)) {
+			forumArticleMapper.updateStatusBatchByUserId(ArticleStatusEnum.DEL.getStatus(), userId);
+			forumCommentMapper.updateStatusBatchByUserId(CommentStatusEnum.DEL.getStatus(), userId);
+		}
+		UserInfo userInfo = new UserInfo();
+		userInfo.setStatus(status);
+		userInfoMapper.updateByUserId(userInfo,userId);
+    }
+
+
+	public String getIpAddress(String ip) {
 		try {
 			String url = "https://whois.pconline.com.cn/ipJson.jsp?json=true&ip=" + ip;
 			String responseJson = OKHttpUtils.getRequest(url);

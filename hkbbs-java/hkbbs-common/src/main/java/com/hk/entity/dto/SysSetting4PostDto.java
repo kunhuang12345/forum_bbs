@@ -1,5 +1,7 @@
 package com.hk.entity.dto;
 
+import com.hk.annotation.VerifyParam;
+
 /**
  * 发帖设置
  */
@@ -7,14 +9,17 @@ public class SysSetting4PostDto {
     /**
      * 发帖积分
      */
+    @VerifyParam(required = true)
     private Integer postIntegral;
     /**
      * 一天发帖数量
      */
+    @VerifyParam(required = true)
     private Integer postDayCountThreshold;
     /**
      * 每天上传图片数量
      */
+    @VerifyParam(required = true)
     private Integer dayImageUploadCount;
 
     public Integer getPostIntegral() {

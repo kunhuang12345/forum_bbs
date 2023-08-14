@@ -28,4 +28,6 @@ public interface ForumCommentMapper<T, P> extends BaseMapper<T, P> {
     void updateCommentGoodCount(@Param("changeCount") Integer changeCount, @Param("commentId") Integer commentId);
 
     void updateTopTypeByArticleId(@Param("articleId") String articleId);
+
+	void updateStatusBatchByUserId(@Param("status") Integer status, @Param("userId") String userId);
 }
