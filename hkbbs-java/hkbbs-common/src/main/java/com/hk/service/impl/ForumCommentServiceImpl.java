@@ -199,7 +199,7 @@ public class ForumCommentServiceImpl implements ForumCommentService {
     public void postComment(ForumComment comment, MultipartFile image) throws BusinessException {
         ForumArticle forumArticle = forumArticleMapper.selectByArticleId(comment.getArticleId());
         // 判断回复的文章状态
-        if (forumArticle == null || ArticleStatusEnum.AUDIT.getStatus().equals(forumArticle.getStatus())) {
+        if (forumArticle == null || !ArticleStatusEnum.AUDIT.getStatus().equals(forumArticle.getStatus())) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
         ForumComment pComment = null;

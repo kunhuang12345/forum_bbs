@@ -64,11 +64,11 @@ public class ForumBoard implements Serializable {
 		return this.boardId;
 	}
 
-	public void setPBoardId(Integer pBoardId) {
+	public void setpBoardId(Integer pBoardId) {
 		this.pBoardId = pBoardId;
 	}
 
-	public Integer getPBoardId() {
+	public Integer getpBoardId() {
 		return this.pBoardId;
 	}
 

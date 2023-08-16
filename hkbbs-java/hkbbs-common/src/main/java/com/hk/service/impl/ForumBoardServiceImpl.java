@@ -121,7 +121,7 @@ public class ForumBoardServiceImpl implements ForumBoardService {
     public void saveForumBoard(ForumBoard forumBoard) throws BusinessException {
         if (forumBoard.getBoardId() == null) {
 			ForumBoardQuery forumBoardQuery = new ForumBoardQuery();
-			forumBoardQuery.setBoardId(forumBoard.getPBoardId());
+			forumBoardQuery.setBoardId(forumBoard.getpBoardId());
 
 			Integer count = forumBoardMapper.selectCount(forumBoardQuery);
 			forumBoard.setSort(count + 1);
@@ -133,7 +133,7 @@ public class ForumBoardServiceImpl implements ForumBoardService {
 			}
 			forumBoardMapper.updateByBoardId(forumBoard,forumBoard.getBoardId());
 			if (!dbInfo.getBoardName().equals(forumBoard.getBoardName())) {
-				forumArticleMapper.updateBoardNameBatch(dbInfo.getPBoardId()==0?0:1, forumBoard.getBoardName(), forumBoard.getBoardId());
+				forumArticleMapper.updateBoardNameBatch(dbInfo.getpBoardId()==0?0:1, forumBoard.getBoardName(), forumBoard.getBoardId());
 			}
 		}
     }
@@ -155,7 +155,7 @@ public class ForumBoardServiceImpl implements ForumBoardService {
 	private List<ForumBoard> convertLine2Tree(List<ForumBoard> dataList,Integer pid) {
 		List<ForumBoard> children = new ArrayList<>();
 		for (ForumBoard m: dataList) {
-			if (m.getPBoardId().equals(pid)) {
+			if (m.getpBoardId().equals(pid)) {
 				m.setChildren(convertLine2Tree(dataList,m.getBoardId()));
 				children.add(m);
 			}

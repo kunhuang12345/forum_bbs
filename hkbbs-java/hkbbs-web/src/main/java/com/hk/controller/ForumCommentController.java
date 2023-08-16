@@ -98,8 +98,8 @@ public class ForumCommentController extends ABaseController {
     @GlobalInterceptor(checkParams = true, checkLogin = true, frequencyType = UserOperatefrequencyTypeEnum.POST_COMMENT)
     public ResponseVO postComment(HttpSession session,
                                   @VerifyParam(required = true) String articleId,
-                                  @VerifyParam(required = true) Integer pComment,
-                                  @VerifyParam(min = 5, max = 800) String content,
+                                  @VerifyParam(required = true) Integer pCommentId,
+                                  @VerifyParam(min = 2, max = 800) String content,
                                   MultipartFile image,
                                   String replyUserId
     ) throws BusinessException {
@@ -119,16 +119,16 @@ public class ForumCommentController extends ABaseController {
         comment.setUserId(userDto.getUserId());
         comment.setNickName(userDto.getNickName());
         comment.setUserIpAddress(userDto.getProvince());
-        comment.setPCommentId(pComment);
+        comment.setPCommentId(pCommentId);
         comment.setArticleId(articleId);
         comment.setContent(content);
         comment.setReplyUserId(replyUserId);
         comment.setTopType(CommentTopTypeEnum.NO_TOP.getType());
         forumCommentService.postComment(comment, image);
-        if (pComment != 0) {
+        if (pCommentId != 0) {
             ForumCommentQuery forumCommentQuery = new ForumCommentQuery();
             forumCommentQuery.setArticleId(articleId);
-            forumCommentQuery.setPCommentId(pComment);
+            forumCommentQuery.setPCommentId(pCommentId);
             forumCommentQuery.setOrderBy("comment_id desc");
             forumCommentQuery.setStatus(Constants.ONE);
             List<ForumComment> children = forumCommentService.findListByParam(forumCommentQuery);

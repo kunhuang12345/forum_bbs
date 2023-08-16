@@ -43,7 +43,7 @@ public class FileController extends ABaseController {
      * @return
      * @throws BusinessException
      */
-    @RequestMapping("/upLoadImage")
+    @RequestMapping("/uploadImage")
     @GlobalInterceptor(checkLogin = true, frequencyType = UserOperatefrequencyTypeEnum.IMAGE_UPLOAD)
     public ResponseVO upLoadImage(MultipartFile file) throws BusinessException {
         if (file == null) {

@@ -31,6 +31,19 @@ public class ForumArticleVO {
     private Integer pBoardId;
 
     /**
+     * 文章标题
+     */
+    private String title;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
      * 父级板块名称
      */
     private String pBoardName;
@@ -39,6 +52,15 @@ public class ForumArticleVO {
      * 用户ID
      */
     private String nickName;
+    private String userId;
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
     /**
      * 封面

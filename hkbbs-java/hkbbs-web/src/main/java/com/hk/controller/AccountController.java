@@ -103,7 +103,7 @@ public class AccountController extends ABaseController {
     public ResponseVO login(HttpSession session,
                             HttpServletRequest request,
                             @VerifyParam(required = true,min = 5,max = 150) String email,
-                            @VerifyParam(required = true,min = 8,max = 18) String password,
+                            @VerifyParam(required = true,min = 8,max = 50) String password,
                             @VerifyParam(required = true) String checkCode) throws Exception {
         try{
             String checkCodeKey = (String)session.getAttribute(Constants.CHECK_CODE_KEY);
@@ -111,7 +111,7 @@ public class AccountController extends ABaseController {
                 throw new BusinessException("验证码错误");
             }
 
-            SessionWebUserDto sessionWebUserDto = userInfoService.login(email,StringTools.encodeMd5(password),getIpAddress(request));
+            SessionWebUserDto sessionWebUserDto = userInfoService.login(email,password,getIpAddress(request));
             session.setAttribute(Constants.SESSION_KEY,sessionWebUserDto);
 
             return getSuccessResponseVO(sessionWebUserDto);

@@ -46,7 +46,7 @@ public class ForumBoardController extends ABaseController {
                                 MultipartFile cover) throws BusinessException {
         ForumBoard forumBoard = new ForumBoard();
         forumBoard.setBoardId(boardId);
-        forumBoard.setPBoardId(pBoardId);
+        forumBoard.setpBoardId(pBoardId);
         forumBoard.setBoardName(boardName);
         forumBoard.setBoardDesc(boardDesc);
         forumBoard.setPostType(postType);
