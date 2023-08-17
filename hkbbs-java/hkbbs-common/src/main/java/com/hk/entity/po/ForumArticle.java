@@ -154,19 +154,19 @@ public class ForumArticle implements Serializable {
 		return this.boardName;
 	}
 
-	public void setPBoardId(Integer pBoardId) {
+	public void setpBoardid(Integer pBoardId) {
 		this.pBoardId = pBoardId;
 	}
 
-	public Integer getPBoardId() {
+	public Integer getpBoardId() {
 		return this.pBoardId;
 	}
 
-	public void setPBoardName(String pBoardName) {
+	public void setpBoardName(String pBoardName) {
 		this.pBoardName = pBoardName;
 	}
 
-	public String getPBoardName() {
+	public String getpBoardName() {
 		return this.pBoardName;
 	}
 

@@ -11,6 +11,10 @@ import com.hk.service.SysSettingService;
 import com.hk.utils.JsonUtils;
 import com.hk.utils.OKHttpUtils;
 import com.hk.utils.StringTools;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,10 +74,11 @@ public class SysSettingController extends ABaseController {
         try {
             String responseJson = OKHttpUtils.getRequest(url);
             ResponseVO responseVO = JsonUtils.convertJson2Obj(responseJson, ResponseVO.class);
-            if (!STATUS_SUCCESS.equals(responseVO.getStatus())) {
+            boolean equal = !STATUS_SUCCESS.equals(responseVO.getStatus());
+            if (equal) {
                 throw new BusinessException("刷新访客端缓存失败");
             }
-        } catch (BusinessException e) {
+        } catch (Exception e) {
             logger.error("请求访客端刷新失败",e);
         }
     }

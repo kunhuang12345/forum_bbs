@@ -83,7 +83,7 @@ public class AccountController extends ABaseController {
     public ResponseVO register(HttpSession session,
                                @VerifyParam(required = true,min = 5,max = 150,regex = VerifyRegexEnum.EMAIL) String email,
                                @VerifyParam(required = true) String emailCode,
-                               @VerifyParam(required = true,min = 3,max = 30) String nickName,
+                               @VerifyParam(required = true,min = 2,max = 30) String nickName,
                                @VerifyParam(required = true,regex = VerifyRegexEnum.PASSWORD,min = 8,max = 18) String password,
                                @VerifyParam(required = true) String checkCode) throws Exception {
         try{

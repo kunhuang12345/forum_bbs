@@ -19,7 +19,6 @@ import com.hk.exception.BusinessException;
 import com.hk.service.*;
 import com.hk.utils.CopyUtils;
 import com.hk.utils.StringTools;
-import org.apache.catalina.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -226,7 +225,7 @@ public class ForumArticleController extends ABaseController {
         title = StringTools.escapeHtml(title);
         SessionWebUserDto userDto = getUserInfoFromSession(session);
         ForumArticle forumArticle = new ForumArticle();
-        forumArticle.setPBoardId(pBoardId);
+        forumArticle.setpBoardid(pBoardId);
         forumArticle.setBoardId(boardId);
         forumArticle.setTitle(title);
         forumArticle.setSummary(summary);
@@ -297,7 +296,7 @@ public class ForumArticleController extends ABaseController {
         SessionWebUserDto userDto = getUserInfoFromSession(session);
         ForumArticle forumArticle = new ForumArticle();
         forumArticle.setArticleId(articleId);
-        forumArticle.setPBoardId(pBoardId);
+        forumArticle.setpBoardid(pBoardId);
         forumArticle.setBoardId(boardId);
         forumArticle.setTitle(title);
         forumArticle.setContent(content);
@@ -322,8 +321,8 @@ public class ForumArticleController extends ABaseController {
         ForumArticleQuery query = new ForumArticleQuery();
         query.setTitleFuzzy(keyword);
         // TODO 查询后分页
-        List<ForumArticle> listByParam = forumArticleService.findListByParam(query);
-        return getSuccessResponseVO(listByParam);
+        PaginationResultVO<ForumArticle> listByPage = forumArticleService.findListByPage(query);
+        return getSuccessResponseVO(listByPage);
 
     }
 

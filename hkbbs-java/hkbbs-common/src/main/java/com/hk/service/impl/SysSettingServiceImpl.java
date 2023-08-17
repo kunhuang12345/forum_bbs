@@ -145,7 +145,7 @@ public class SysSettingServiceImpl implements SysSettingService {
     @Transactional(rollbackFor = Exception.class)
     public void saveSetting(SysSettingDto sysSettingDto) throws BusinessException {
         try {
-            Class clazz = SysSettingService.class;
+            Class clazz = SysSettingDto.class;
             for (SysSettingCodeEnum codeEnum : SysSettingCodeEnum.values()) {
                 // 取类中的codeEnum.getPropName属性
                 PropertyDescriptor pd = new PropertyDescriptor(codeEnum.getPropName(), clazz);

@@ -289,11 +289,11 @@ public class ForumArticleServiceImpl implements ForumArticleService {
      * 设置板块信息
      */
     private void resetBoardInfo(Boolean isAdmin, ForumArticle forumArticle) throws BusinessException {
-        ForumBoard pBoard = forumBoardService.getForumBoardByBoardId(forumArticle.getPBoardId());
+        ForumBoard pBoard = forumBoardService.getForumBoardByBoardId(forumArticle.getpBoardId());
         if (pBoard == null || (Constants.ZERO.equals(pBoard.getPostType()) && !isAdmin)) {
             throw new BusinessException("一级板块不存在");
         }
-        forumArticle.setPBoardName(pBoard.getBoardName());
+        forumArticle.setpBoardName(pBoard.getBoardName());
 
 
         if (forumArticle.getBoardId() != null && forumArticle.getBoardId() != 0) {
@@ -397,7 +397,7 @@ public class ForumArticleServiceImpl implements ForumArticleService {
     @Override
     public void updateBoard(String articleId, Integer pBoardId, Integer boardId) throws BusinessException {
         ForumArticle forumArticle = new ForumArticle();
-        forumArticle.setPBoardId(pBoardId);
+        forumArticle.setpBoardid(pBoardId);
         forumArticle.setBoardId(boardId);
         // 重置板块信息
         resetBoardInfo(true,forumArticle);

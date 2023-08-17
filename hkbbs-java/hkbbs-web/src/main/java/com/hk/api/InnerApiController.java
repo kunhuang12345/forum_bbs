@@ -34,12 +34,12 @@ public class InnerApiController extends ABaseController {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
 
-        // 使得管理端提交数据时与进入此方法的时间不超过10s
+//         使得管理端提交数据时与进入此方法的时间不超过10s
         if (System.currentTimeMillis() - timestamp > 1000*10) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
 
-        String mySign = StringTools.encodeMd5(appKey + timestamp + webConfig.getInnerApiAppKey());
+        String mySign = StringTools.encodeMd5(appKey + timestamp + webConfig.getInnerApiAppSecret());
 
         if (!mySign.equals(sign)) {
             throw  new BusinessException(ResponseCodeEnum.CODE_600);
